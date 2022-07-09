@@ -1,0 +1,210 @@
+@threeDPrimaryColor: rgb(255, 255, 255);
+@threeDSecondaryColor: rgba(190, 190, 190, 0.5);
+@threeDTertiaryColor: rgba(65, 65, 65, 0.7);
+
+[data-control-class=FlowAlbumView] canvas{
+    width: 100%!important;
+    height: 100%!important;
+}
+
+.threeDView-artistViewParent{
+    position: relative;
+    width: 100%;
+    height: round(@fontSize * 16);
+}
+
+// Modifications for inside the artist view
+.threeDView-artistView{
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    & canvas {
+        position: absolute;
+        left: 100%;
+    }
+    & .threeDView-settingsButton {
+        right: -100%;
+        z-index: 1;
+    }
+    & .threeDView-textContainer {
+        font-size: @units0_9!important;
+        bottom: @units5_0!important;
+    }
+}
+
+.threeDView-textContainer{
+    color: white;
+    position: absolute;
+    bottom: @units4_0;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    z-index: 10;
+    -webkit-user-select: none;
+    -moz-user-select: none;    
+    -ms-user-select: none;      
+    user-select: none;
+    text-align: center;
+    &.threeDView-textShadowEnabled{
+        text-shadow: 0px 0px @units0_3 black, 1px 1px @units1_7 black;
+    }
+    font-size: @units1_5;
+    &.threeDView-medium{
+        font-size: @units1_2;
+    }
+    &.threeDView-small{
+        font-size: @units1_0;
+    }
+    &.threeDView-xsmall{
+        font-size: @units0_8;
+        bottom: @units3_0;
+        & .threeDView-textSubheader{
+            padding: 4px 0px;
+        }
+    }
+}
+.threeDView-textHeader{
+    display: inline-block;
+    font-size: 1.65em;
+    padding: 4px 0px;
+    height: ~"calc(1em + 8px)";
+}
+.threeDView-textSubheader{
+    display: inline-block;
+    font-size: 1.45em;
+    padding: 8px 0px;
+    height: ~"calc(1em + 8px)";
+}
+.threeDView-textLine1, .threeDView-textLine2{
+    display: inline-block;
+    font-size: 1em;
+    padding: 2px 0px;
+    height: ~"calc(1em + 2px)";
+}
+.threeDView-hotlink {
+    .hotlink;
+    color: fadein(@hotlinkColor, 25%);
+}
+.threeDView-hotlink:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+.threeDView-settingsButton{
+    position: absolute;
+    right: @units0_5;
+    top: 0px;
+    opacity: 0.45;
+}
+.threeDView-settingsButton:hover{
+    opacity: 0.9;
+}
+
+.threeDView-seekBarContainer{
+    position: absolute;
+    bottom: @units2_0;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    z-index: 10;
+    -webkit-user-select: none;  
+    -moz-user-select: none;    
+    -ms-user-select: none;      
+    user-select: none;
+}
+.threeDView-seekBarParent{
+    position: relative;
+    margin: auto;
+    width: 80%;
+    max-width: 750px;
+    height: 20px;
+    z-index: 1000;
+    background-color: @threeDSecondaryColor;
+}
+.threeDView-seekBar-arrowLeft,.threeDView-seekBar-arrowRight{
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    background-color: @threeDTertiaryColor;
+}
+.threeDView-seekBar-arrowLeft{
+    left: 0px;
+    color: white;
+}
+.threeDView-seekBar-arrowLeft::after{
+    position: relative;
+    display: block;
+    width: 0;
+    height: 0;
+    left: @units0_3;
+    top: @units0_2;
+    border-top: @units0_7 solid transparent;
+    border-bottom: @units0_7 solid transparent;
+    border-right: @units0_9 solid @threeDPrimaryColor;
+    content: '';
+}
+.threeDView-seekBar-arrowRight{
+    right: 0px;
+    color: white;
+}
+.threeDView-seekBar-arrowRight::after{
+    position: relative;
+    display: block;
+    width: 0;
+    height: 0;
+    left: @units0_5;
+    top: @units0_2;
+    border-top: @units0_7 solid transparent;
+    border-bottom: @units0_7 solid transparent;
+    border-left: @units0_9 solid @threeDPrimaryColor;
+    content: '';
+}
+.threeDView-seekBar{
+    height: 20px;
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    // background-color: rgb(255, 255, 255);
+}
+.threeDView-seekBar-drag{
+    position: absolute;
+    left: 2px;
+    top: 1px;
+    height: 18px;
+    width: 40px;
+    background-color: @threeDPrimaryColor;
+    box-shadow: 0px 0px 7px fadeout(@threeDTertiaryColor, 50%);
+}
+.threeDView-CornerTextBox{
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    color: white;
+}
+
+.threeDView-defaultstyles{
+    width: 0;
+    height: 0;
+}
+
+/**
+    Change this attribute, in your skin's skin_base_add.less, to change the color of the 3D background.
+    PLEASE USE THE !important KEYWORD. EXAMPLE:
+    
+    .threeDView-defaultstyles{
+        background-color: red!important;
+    }
+    
+    Otherwise, it will prioritize the setting from this very file, meaning your skin can't override the color.
+*/
+.threeDView-defaultstyles{
+    background-color: @baseColor;
+}
+
+.threeDView-tracklist{
+    height: 25%;
+}
+
+// note to self, add this to the mm5 source
+.colorPicker[data-disabled] {
+    opacity: 0.5;
+}

@@ -1,0 +1,97 @@
+<div class="uiRows">
+    <fieldset>
+        <legend>Background color</legend>
+        <div class="uiRow">
+            <div data-id="bgSkinChoice" data-control-class="Checkbox" data-init-params="{type: 'radio', value: 'SkinChoice', name: 'bgColor'}">Let the skin decide</div>
+        </div>
+        <div class="uiRow">
+            <div data-id="bgCustomChoice" data-control-class="Checkbox" data-init-params="{type: 'radio', value: 'CustomChoice', name: 'bgColor'}">Set a custom color:</div>
+        </div>
+        <div class="uiRow">
+            <div data-id="bgColor" data-control-class="ColorPicker" data-init-params="{value: '#222222', size: 200}"></div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Text fields</legend>
+        <table>
+            <tr>
+                <th></th>
+                <th data-tip="This field will determine the text that displays on the corresponding line.">Text</th>
+                <th data-tip="This field will determine whether you can click on the text to open another view, of the corresponding field.">Hotlink</th>
+            </tr>
+            <tr>
+                <td class="padding textRight">Header:</td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="textFieldHeader" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="hotlinkFieldHeader" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td class="padding textRight">Subheader:</td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="textFieldSubheader" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="hotlinkFieldSubheader" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td class="padding textRight">Line 1:</td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="textFieldLine1" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="hotlinkFieldLine1" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td class="padding textRight">Line 2:</td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="textFieldLine2" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+                <td class="padding">
+                    <div class="stretchWidth" data-id="hotlinkFieldLine2" data-control-class="Dropdown" data-init-params="{readOnly: true}"></div>
+                </td>
+            </tr>
+        </table>
+        <div class="uiRow">
+            <div data-id="chbPrefix" data-control-class="Checkbox">Show prefix for each field (e.g. "Title:")</div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Other</legend>
+        <!-- <div class="uiRow">
+            <div data-id="chbThrottleCarouselSpeed" data-control-class="Checkbox">Throttle the carousel speed (to prevent the carousel from disappearing from view)</div>
+        </div> -->
+        <div class="uiRow">
+            <label>Number of albums to scroll with the mouse wheel:</label>
+            <div data-id="mouseScrollNum" data-control-class="Dropdown" data-init-params="{readOnly: true}">
+                <option>Use Windows setting</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+                <option>9</option>
+                <option>10</option>
+            </div>
+        </div>
+        <div class="uiRow">
+            <div data-id="chbHighQuality" data-control-class="Checkbox">Use high-quality thumbnails (Recommended) (Disable to reduce memory usage)</div>
+        </div>
+        <div class="uiRow">
+            <div data-id="chbCapFramerate" data-control-class="Checkbox">Reduce maximum framerate (Enable to reduce CPU/GPU usage)</div>
+        </div>
+        <div class="uiRow">
+            <div data-id="chbWiderAlbums" data-control-class="Checkbox">Space albums wider apart</div>
+        </div>
+        <div class="uiRow">
+            <div data-id="chbDisablePerspective" data-control-class="Checkbox">Disable perspective distortion on the center cover</div>
+        </div>
+    </fieldset>
+</div>

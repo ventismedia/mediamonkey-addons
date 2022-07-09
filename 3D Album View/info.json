@@ -1,0 +1,12 @@
+{
+    "title": "3D Flow Album View",
+    "id": "3D Album View",
+    "description": "3D album view for MediaMonkey 5, inspired by MonkeyFlow. Requires WebGL.",
+    "type": "views",
+    "version": "1.1.2",
+    "author": "Ventis Media, Inc.",
+    "config": "config.js",
+    "installScript": "checkWebGL.js",
+    "icon": "thumb.png",
+    "minAppVersion": "5.0.0"
+}
