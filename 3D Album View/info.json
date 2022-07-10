@@ -8,5 +8,5 @@
     "config": "config.js",
     "installScript": "checkWebGL.js",
     "icon": "thumb.png",
-    "minAppVersion": "5.0.0"
+    "minAppVersion": "5.0.3"
 }
