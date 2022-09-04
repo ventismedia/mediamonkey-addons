@@ -1,0 +1,10 @@
+{
+    "title": "Disable Seekbar Click above Player",
+    "id": "Disable Seekbar Click above Player",
+    "description": "Moves the clickable area of the seekbar down so that it does not overlap with other views, in Material Design skins.",
+    "version": "1.0.1",
+    "minAppVersion": "5.0.0",
+    "author": "Ventis Media, Inc.",
+	"type": "appearance",
+	"icon": "icon.png"
+}
