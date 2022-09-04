@@ -63,7 +63,6 @@ viewHandlers.FlowAlbumView = inheritHandler('FlowAlbumView', 'BaseList', {
         if (!albumList) alert('Couldn\'t find albumList!');
         
         view.delayedAssign(albumList, function () {
-            // console.log('Assigning');
             control.controlClass.dataSource = albumList;
             if (tracks)
                 control.controlClass.completeTracklist = tracks;

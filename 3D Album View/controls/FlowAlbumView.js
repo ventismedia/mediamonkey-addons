@@ -511,7 +511,6 @@ inheritClass('FlowAlbumView', Control, {
     // I don't want to load the tracklist inside the controller when the tracklist isn't loaded,
     //  so this is a way to force the controller to load the tracklist when the subview is shown
     refreshTracklistDS: function() {
-        // console.log('refreshTracklistDS');
         this.completeTracklist = this.completeTracklist;
         this.controller._updateCurrentAlbum(true);
     },
@@ -624,7 +623,6 @@ inheritClass('FlowAlbumView', Control, {
             this._completeTracklistLoaded = false;
             
             if (!this.needsTracklist || !newList) return console.log('completeTracklist: skipping', !this.needsTracklist, !newList); // Skip unnecessary computation. refreshTracklistDS will make this run a second time if needed
-            // console.log('completeTracklist');
             
             // tracklistIDs will resolve when, as the name implies, the tracklist IDs are ready
             this.tracklistIDs = new Promise((resolve, reject) => {
