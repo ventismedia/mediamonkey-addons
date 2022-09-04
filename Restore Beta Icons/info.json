@@ -1,0 +1,9 @@
+{
+    "title": "Restore Beta Icons",
+    "id": "Restore Beta Icons",
+    "description": "Restores non-Material Design icons to how they were in pre-release (beta) versions of MediaMonkey 5.",
+    "version": "1.0.0",
+    "type": "icons",
+    "author": "Ventis Media, Inc.",
+    "icon": "thumb.png"
+}
