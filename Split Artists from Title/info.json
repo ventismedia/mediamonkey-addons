@@ -1,0 +1,9 @@
+{
+    "title": "Split Artists from Title",
+    "id": "featuredArtistsToArtists",
+    "description": "Allows you to convert \"featured\" artists from a track's Title or Artist fields and add it to the list of Artist(s). [For example:  Title (feat. Artist) -> Title]",
+    "version": "1.0.2",
+    "type": "metadata",
+    "author": "Ventis Media, Inc.",
+    "icon": "multipleArtists"
+}

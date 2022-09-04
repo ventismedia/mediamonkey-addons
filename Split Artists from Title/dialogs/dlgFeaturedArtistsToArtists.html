@@ -1,0 +1,63 @@
+<html class="dialog">
+<script src="file:///mminit.js"></script>
+<script src="dlgFeaturedArtistsToArtists.js"></script>
+
+<body data-posSaveName='dlgFeaturedArtistsToArtists' data-defaultSize='40em,20em'>
+    <div class="padding fill flex column">
+        <div class="fill scrollable">
+            <div class="uiRows">
+                <div class="padding" data-tip="MediaMonkey will use the keywords (as they appear or with a period) to find and move artist names from the Title to the Artist field.">
+					<div>
+						<span data-localize>Move featured artists from Title to the Artist field.</span>
+					</div>
+                    <label class="textWrap" data-add-colon>Keywords identifying artists (comma-separated)</label>
+                    <div class="stretchWidth" data-id="editKeywordList" data-control-class="Edit"></div>
+                </div>
+                <div class="padding marginsColumn">
+                    <table>
+                        <colgroup>
+                            <col span="1" style="width: 43%;">
+                            <col span="1" style="width: 5%;">
+                            <col span="1" style="width: 20%;">
+                            <col span="1" style="width: 32%;">
+                        </colgroup>
+                        <tr>
+                            <th style="text-align: left"><span data-localize>Title</span></th>
+                            <th></th>
+                            <th><span data-localize>Title</span></th>
+                            <th><span data-localize>Artist</span></th>
+                        </tr>
+                        <tr>
+                            <td data-no-localize>
+                                <span>Despacito</span>&nbsp;
+                                <strong>ft.</strong>
+                                <span>Daddy Yankee</span>
+                            </td>
+                            <td data-no-localize class="textCenter">&#8594;</td>
+                            <td class="textCenter" data-no-localize>Despacito</td>
+                            <td class="textCenter" data-no-localize>Luis Fonsi; Daddy Yankee</td>
+                        </tr>
+                        <tr>
+                            <td data-no-localize>
+                                <span>Under Pressure</span>&nbsp;
+                                (<strong>feat.</strong>
+                                <span>David Bowie</span>)
+                            </td>
+                            <td data-no-localize class="textCenter">&#8594;</td>
+                            <td class="textCenter" data-no-localize>Under Pressure</td>
+                            <td class="textCenter" data-no-localize>Queen; David Bowie</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div data-control-class="Buttons">
+                <div data-id='btnOK' data-default="1"></div>
+                <div data-id='btnCancel'></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
