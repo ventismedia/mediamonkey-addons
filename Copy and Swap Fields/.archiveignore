@@ -1,0 +1,5 @@
+*.mmip
+*.gitignore
+preamble.txt
+package-lock.json
+package.json

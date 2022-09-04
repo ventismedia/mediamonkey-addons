@@ -1,0 +1,8 @@
+{
+	"devDependencies": {
+		"pack-mmip": "^1.1.1"
+	},
+	"scripts": {
+		"package": "npx pack-mmip . copy-and-swap-fields --preamblefile preamble.txt --preamble-js \"/* %s */\" -y -a"
+	}
+}
