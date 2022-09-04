@@ -1,0 +1,9 @@
+{
+    "title": "Lyrics Font Size",
+    "id": "lyricsFontSize",
+    "description": "Adds font size controls to the lyrics window.",
+    "type": "views",
+    "version": "1.0.0",
+    "author": "Ventis Media, Inc.",
+    "minAppVersion": "5.0.0"
+}
