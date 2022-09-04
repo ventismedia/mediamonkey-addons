@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg width="100%" height="100%" viewBox="0 0 26.458334 26.458334" version="1.1" id="svg5" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <defs id="defs2">
+    <rect x="40.503288" y="45.003654" width="204.19588" height="71.013359" id="rect3086" />
+    <rect x="40.503288" y="45.003654" width="163.29897" height="73.93457" id="rect3086-1" />
+    <symbol id="DownArrow">
+      <title id="title26935">Down Arrow</title>
+      <path d="m 9.525,16.66875 -5.8208333,-5.820833 v -3.9687503 l 4.2333333,4.2333333 v -8.4666667 h 3.175 v 8.4666667 l 4.233333,-4.2333333 v 3.9687503 z" style="stroke:none;stroke-width:0.264583" id="path26937" />
+    </symbol>
+    <clipPath clipPathUnits="userSpaceOnUse" id="clipPath35892">
+      <use x="0" y="0" xlink:href="#g35888" id="use35894" width="100%" height="100%" />
+    </clipPath>
+  </defs>
+  <g id="layer1">
+    <g aria-label="x; y" transform="matrix(0.38660991,0,0,0.38660991,-15.334626,-16.031072)" id="text3084-0" style="font-size:42.6667px;line-height:1.25;white-space:pre;shape-inside:url(#rect3086-1);fill-rule:nonzero">
+      <path d="m 61.483089,62.59668 -7.104172,10.791674 7.020838,10.541675 h -5.604171 l -3.750002,-6.604172 q -0.354167,-0.604167 -0.833334,-1.541668 h -0.08333 q -0.08333,0.187501 -0.875,1.541668 l -3.812503,6.604172 h -5.583342 l 7.250006,-10.458341 -6.875006,-10.875008 h 5.625005 l 3.687502,6.937505 q 0.416667,0.770834 0.812501,1.583334 h 0.0625 l 4.770837,-8.520839 z" style="font-weight:600;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI Semi-Bold';fill-rule:nonzero" id="path34743" />
+      <path d="m 67.024759,67.867517 q -1.229168,0 -2.083335,-0.833334 -0.833334,-0.854167 -0.833334,-2.020835 0,-1.166668 0.833334,-1.979168 0.854167,-0.812501 2.083335,-0.812501 1.187501,0 2.041668,0.812501 0.854167,0.8125 0.854167,1.979168 0,1.166668 -0.854167,2.020835 -0.854167,0.833334 -2.041668,0.833334 z m 2.520835,11.083341 -3.166669,10.479175 h -3.687503 l 2.270835,-10.479175 z" style="font-weight:600;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI Semi-Bold';fill-rule:nonzero" id="path34745" />
+      <path d="m 105.52479,62.59668 -9.625008,24.750018 q -3.000003,6.625005 -8.416673,6.625005 -1.520835,0 -2.541669,-0.270834 v -4.020836 q 1.145834,0.375 2.083335,0.375 2.708335,0 4.04167,-2.666668 l 1.437501,-3.500003 -8.479173,-21.291682 h 5.35417 l 5.083338,15.500011 q 0.08333,0.291667 0.375,1.541668 h 0.104167 q 0.104166,-0.479167 0.375,-1.500001 l 5.333342,-15.541678 z" style="font-weight:600;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI Semi-Bold';fill-rule:nonzero" id="path34747" />
+    </g>
+    <g id="g35884" transform="matrix(0.21071243,0,0,0.21071243,-0.78637742,-1.1472815)">
+      <g id="g35890" clip-path="url(#clipPath35892)" style="fill-rule:evenodd">
+        <g id="g35888" style="fill-rule:evenodd" />
+      </g>
+    </g>
+  </g>
+</svg>

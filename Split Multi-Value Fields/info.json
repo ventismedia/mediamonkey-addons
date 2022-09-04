@@ -1,0 +1,9 @@
+{
+    "title": "Split Multi-Value Fields",
+    "id": "cleanMultiValueFields",
+    "description": "Allows you to quickly fix the separator for fields with multiple values, such as genre and artist, to the correct separator.",
+    "version": "1.0.3",
+    "icon": "cleanMultiValueFields",
+    "type": "metadata",
+    "author": "Ventis Media, Inc."
+}
