@@ -1,0 +1,1 @@
+This file is part of a free addon to MediaMonkey. In the absence of another license noted below, this source code is licensed for use and the creation of derivative works under the Ventis Limited Reciprocal License. See: https://www.mediamonkey.com/sw/mmw/5/Ventis_limited_reciprocal_license.txt
