@@ -1,0 +1,10 @@
+{
+    "title": "Bomb Rating",
+    "id": "bomb-rating",
+    "description": "Brings back the \"bomb\" rating to MediaMonkey. Replaces a zero-star rating with a bomb icon.",
+    "type": "icons",
+    "version": "1.0.1",
+    "author": "Ventis Media, Inc.",
+    "minAppVersion": "5.0.3",
+    "icon": "skin/icon/bomb.svg"
+}
