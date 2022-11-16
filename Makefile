@@ -11,6 +11,7 @@ default: 3d-album-view \
 	restore-beta-icons \
 	split-artists-from-title \
 	split-multi-value-fields \
+	sqleditor \
 	undock-panels
 
 clean:
@@ -39,6 +40,9 @@ split-artists-from-title:
 
 split-multi-value-fields:
 	pack-mmip $@ "Split Multi-Value Fields" $(PACKER-ARGS)
+
+sqleditor:
+	pack-mmip $@ "SQL Editor" $(PACKER-ARGS)
 
 undock-panels:
 	pack-mmip $@ "Undock Panels" $(PACKER-ARGS)

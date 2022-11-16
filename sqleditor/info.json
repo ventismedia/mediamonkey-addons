@@ -1,0 +1,10 @@
+{
+    "title": "SQL Editor",
+    "id": "sqleditor",
+    "description": "Provides a window that allows you to execute SQL queries from within the interface.",
+    "type": "general",
+    "icon": "icon.svg",
+    "author": "Ventis Media, Inc.",
+    "version": "1.0.2",
+    "minAppVersion": "5.0.0"
+}

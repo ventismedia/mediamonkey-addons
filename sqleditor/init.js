@@ -1,0 +1,3 @@
+requirejs('actions');
+localRequirejs('local');
+

@@ -1,0 +1,52 @@
+.sqltable th {
+    border: 1px solid;
+    background-color: @headerColor;
+}
+
+.sqltable td {
+    border: 1px solid;
+    white-space: nowrap;
+    // background-color: #ffffff;
+}
+
+@codeEditorColor1: contrast(@baseColor, #1200b8, #71c6ff);
+@codeEditorColor2: contrast(@baseColor, #970000, #ff2b2b);
+@codeEditorColor3: contrast(@baseColor, #00a824, #9bffac);
+
+.codeEditor{
+    position: relative;
+    .border;
+}
+
+.codeEditorPre, .codeEditorTextarea {
+    margin: 0;
+    padding: @units0_3;
+    border: 0;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    & * {
+        font-family: monospace;
+    }
+}
+
+.codeEditorTextarea {
+    z-index: 1;
+    color: transparent;
+    background: transparent;
+    caret-color: @textColor;
+}
+.codeEditorPre {
+    z-index: 0;
+    box-sizing: border-box;    
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    & .color1 { color: @codeEditorColor1; }
+    & .color2 { color: @codeEditorColor2; }
+    & .color3 { color: @codeEditorColor3; }
+}
+
+.codeEditorPre::-webkit-scrollbar {
+    opacity: 0!important;
+}

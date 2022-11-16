@@ -1,0 +1,29 @@
+<html class="dialog">
+
+<head>
+    <title>SQL Editor</title>
+    <script src="file:///mminit.js"></script>
+    <script src="dlgSQLEditor.js"></script>
+</head>
+
+<body data-posSaveName="dlgSQLEditor" data-defaultSize="1000,800">
+    <div class="padding fill flex column">
+        <div data-id="toppanel" class="fill flex column hSeparatorTiny">
+            <label data-add-colon class="paddingRow">Query</label>
+            <div data-id="panel" class="stretchWidth flex column hSeparatorTiny" style="height: 150px">
+                <div data-id="sqlpanel" class="fill" data-control-class="SQLEditor">
+                </div>
+            </div>
+            <label data-add-colon class="paddingRow">Result</label>
+            <div data-id="resultLV" class="fill scrollable">
+            </div>
+        </div>        
+        <div data-control-class="Buttons">
+            <div data-id="btnExecute" data-position="opposite">Execute</div>
+            <div data-id="btnCancel">Close</div>
+        </div>
+        <label data-id="progress" class="statusbar"></label>
+    </div>
+</body>
+
+</html>
