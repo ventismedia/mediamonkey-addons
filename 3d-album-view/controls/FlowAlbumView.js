@@ -272,6 +272,10 @@ inheritClass('FlowAlbumView', Control, {
             }
         }
     },
+    // Needed for reliable "Play now"/"Play next"/etc., used in getSelectedTracklist in actions.js
+    getTracklist: function () {
+        return this.focusedTracklist;
+    },
     _incrementalSearchMessageSuffix: function () {
         return ''; // not supported
     },
@@ -394,7 +398,7 @@ inheritClass('FlowAlbumView', Control, {
         }
 
         function onMouseDown(e) {
-            window.lastFocusedControl = _this.parent;
+            window.lastFocusedControl = _this.container;
             _this.controller.onMouseDown(e);
         }
     },
@@ -504,7 +508,7 @@ inheritClass('FlowAlbumView', Control, {
         if (!duration) duration = 50;
         if (this.controller) {
             this.forceSmoothResize = true;
-            this.requestTimeout(() => {this.forceSmoothResize = false; console.log('smoothResize done')}, duration, 'smoothResize');
+            this.requestTimeout(() => {this.forceSmoothResize = false;}, duration, 'smoothResize');
         }
         this.triggerTemporaryForcedFrames(duration);
     },
@@ -535,7 +539,7 @@ inheritClass('FlowAlbumView', Control, {
     restorePersistentState: function (state) {
         if (state.sorting) {
             this.autoSortString = state.sorting;
-            this._refreshDataSource(this._dataSource); // When we restore our state, we must make sure our controller knows 
+            // this._refreshDataSource(this._dataSource); // When we restore our state, we must make sure our controller knows 
         };
     },
     
@@ -672,6 +676,20 @@ inheritClass('FlowAlbumView', Control, {
             if (this.parentView && this.parentView.tracklistControl) {
                 this.parentView.tracklistControl.dataSource = ds;
             }
+        }
+    },
+    /**
+     * The supported autoSortStrings are set in viewHandlers_add.js.
+     * The autoSortString is set in either multiview.js or dlgEditView.js, and when it's set, we have to update our dataSource's autoSortString.
+     * That's done in _refreshDataSource().
+     */
+    autoSortString: {
+        get: function () {
+            return this._autoSortString;
+        },
+        set: function (string) {
+            this._autoSortString = string;
+            this._refreshDataSource(this._dataSource); // When we modify our sort string, we must update our data source & make sure our controller knows 
         }
     }
 });

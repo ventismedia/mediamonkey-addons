@@ -13,6 +13,7 @@ const HIGH_PICTURE_QUALITY = 512;
 const LOW_PICTURE_QUALITY = 200;
 var   SPACING = 1.5;
 const WIDE_SPACING_MULTIPLE = 2;
+const fullDebug = false;
 
 function displayToast(message) {
     uitools.toastMessage.show(message, {
@@ -78,7 +79,7 @@ class AlbumArtController{
                                 this.paths[index] = path;
                                 delete this.cancelTokens[index];
                                 loadArtByPath(path); // Load the art so that it's ready by the next frame (this is inside an async callback so we're not doing it 2x in one call)
-                                if (forceLoadTexture) this.getArt(index, isMovingFast, forceLoadTexture, callback); // For preloading texture
+                                if (forceLoadTexture && fullDebug) ODS(`FlowController - Force loading ${index}`);
                             });
                             this.cancelTokens[index] = cancelToken;
                         }
@@ -91,6 +92,7 @@ class AlbumArtController{
         
         function loadArtByPath(path) {
             let resolvedPath = resolveToValue(path);
+            if (fullDebug) ODS(`FlowController - Loading index=${index} path ${resolvedPath}`);
             if (!resolvedPath) return;
             if (_this.loadedTextures[resolvedPath]) {
                 _this.arts[index] = _this.loadedTextures[resolvedPath];
@@ -190,7 +192,7 @@ class AlbumArtController{
 
 class FlowController{
 	constructor(control) {
-        // ODS('FlowController - constructor')       
+        if (fullDebug) ODS('FlowController - constructor')       
         this.parentElement = control.parent;
         this.control = control;
         this.scene = control.scene;
@@ -213,7 +215,7 @@ class FlowController{
         let defaultBackgroundColor;
         
 		this.fastMoveEnabled = true;
-		// ODS('FlowController - Creating albumArts, DOMControls, DOMText');
+		if (fullDebug) ODS('FlowController - Creating albumArts, DOMControls, DOMText');
         if (control.defaultStyles && control.defaultStyles.backgroundColor) {
             // split rgb(#,#,#) into [#,#,#]
             defaultBackgroundColor = control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
@@ -231,7 +233,7 @@ class FlowController{
         }
         else throw new Error('The defaultStyles object does not have backgroundColor defined');
         
-        // ODS('FlowController - created AAController');
+        if (fullDebug) ODS('FlowController - created AAController');
 		this.DOMControls = this._createDOMControls();
         this.DOMText = this._createDOMText();
         
@@ -241,7 +243,7 @@ class FlowController{
 		const noImage = this.albumArts.noImage;
 		
 		this.maxPosition = 100;
-		// ODS('FlowController - Creating geometry & material');
+		if (fullDebug) ODS('FlowController - Creating geometry & material');
 		this.geometry = new THREE.PlaneBufferGeometry(PICTURE_SIZE, PICTURE_SIZE, 1, 1);
 		const gradientMaterial = new THREE.MeshBasicMaterial({
 			map: this.albumArts.gradient, 
@@ -249,7 +251,7 @@ class FlowController{
 			transparent: true,
 		});
 		
-		// ODS('FlowController - Creating objects');
+		if (fullDebug) ODS('FlowController - Creating objects');
 		this.objects = [];
 		for (var i = 0; i < TOTAL_GEOMETRIES; i++) {
 			//Regular album
@@ -269,7 +271,7 @@ class FlowController{
 			reflectionMesh.rotation.reorder(order);
 			gradientMesh.rotation.reorder(order);
 			
-            // ODS('FlowController - object #'+i);
+            if (fullDebug) ODS('FlowController - object #'+i);
             if (!mesh) throw new Error('FlowController - Mesh not defined');
             if (!reflectionMesh) throw new Error('FlowController - reflectionMesh not defined');
             if (!gradientMesh) throw new Error('FlowController - gradientMesh not defined');
@@ -738,17 +740,15 @@ class FlowController{
                         line2: line2link,
                     });
                     
-                    // now update the data source of the tracklist
-                    if (this.control.needsTracklist) {
-                        // For playlists, we have to filter the tracklist
-                        if (this.control.parentView.viewNode.handlerID === 'playlist') {
-                            let filteredTracklist = await this.filterFromPlaylist(tracklist);
-                            this.control.focusedTracklist = filteredTracklist;
-                        }
-                        else {
-                            this.control.focusedTracklist = tracklist;
-                        }
-                    }
+                    // now update the data source of the tracklist (needed for FlowAlbumView.getTracklist)
+					if (this.control.needsTracklist && this.control.parentView.viewNode.handlerID === 'playlist') {
+						// For playlists, we have to filter the tracklist
+						let filteredTracklist = await this.filterFromPlaylist(tracklist);
+						this.control.focusedTracklist = filteredTracklist;
+					}
+					else {
+						this.control.focusedTracklist = tracklist;
+					}
                     
                     function makeString(textField) {
                         if (album[textField] === -1 || !textField) return '';
