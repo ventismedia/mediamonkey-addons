@@ -147,7 +147,7 @@ inheritClass('FlowAlbumView', Control, {
         this._handleSettingsChange = function() {
             this.loadSettings();
         }.bind(this);
-
+        ODS('FlowAlbumView - hello world');
         this.localListen(elem, 'keydown', handleKeypress, true);
         this.localListen(elem, 'mousemove', onMouseMove, false);
         this.localListen(elem, 'layoutchange', onLayoutChange);
@@ -210,6 +210,7 @@ inheritClass('FlowAlbumView', Control, {
         }
 
         function handleKeypress(e) {
+            ODS(`FlowAlbumView - handleKeypress, key = ${e.key}`);
             var handled = false;
 
             if (e.key === 'ArrowLeft') {
