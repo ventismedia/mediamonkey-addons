@@ -124,9 +124,9 @@ inheritClass('FlowAlbumView', Control, {
                                 // only allow the songs that are IN the playlist to play (not the whole album)
                                 tracklist = await _this.controller.filterFromPlaylist(tracklist);
                             }
-                            await player.stopAsync();
-                            await player.addTracksAsync(tracklist, { withClear: true });
-                            player.playAsync();
+                            await app.player.stopAsync();
+                            await app.player.addTracksAsync(tracklist, { withClear: true });
+                            app.player.playAsync();
                         }
                         else ODS('FlowAlbumView - no album');
                     });
@@ -382,6 +382,7 @@ inheritClass('FlowAlbumView', Control, {
 
             // this.renderer = null;
             // console.log('creating tempRenderer');
+            /** @type {import('three').WebGLRenderer} */
             var tempRenderer = new THREE.WebGLRenderer({ antialias: true });
             // console.log('created tempRenderer');
             this.renderer = tempRenderer;

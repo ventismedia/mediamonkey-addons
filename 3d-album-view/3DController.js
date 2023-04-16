@@ -580,7 +580,7 @@ class FlowController{
         app.listen(window, 'blur', () => {
             this._seekEnd();
         });
-        localListen(player, 'playbackState', (newState) => {
+        localListen(app.player, 'playbackState', (newState) => {
             if (newState === 'trackChanged') {
                 this._updateCurrentAlbum(true);
             }
@@ -763,7 +763,7 @@ class FlowController{
                     }
                     
                     function makeTrackTitleString(tracklist) {
-                        let track = player.getCurrentTrack();                        
+                        let track = app.player.getCurrentTrack();                        
                         if (typeof tracklist.getAllValues !== 'function') return '[Not supported, please update to at least 5.0.2]';
                         let paths = tracklist.getAllValues('path');
                         // if the album includes the current track, then print its title
