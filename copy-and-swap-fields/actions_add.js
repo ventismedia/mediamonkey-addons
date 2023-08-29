@@ -1,8 +1,12 @@
 (() => {
+    
+    function isDateField(fieldID) {
+        return fieldID === 'date' || fieldID === 'origDate';
+    }
 	
-	var supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'author', 'conductor', 'composer', 'director', 'comment', 'lyrics'];
+	const supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'author', 'conductor', 'composer', 'date', 'director', 'comment', 'lyrics', 'origDate'];
 	var classificationFields = ['tempo', 'mood', 'occasion', 'quality', 'initialKey'];
-	
+    
 	actions.copyFieldToField = {
 		title: _('Copy field to field') + '...',
 		hotkeyAble: false,
@@ -57,7 +61,8 @@
 				order: 0,
 				grouporder: 20
 			};
-			for (let fromFieldID of classificationFields) {
+			for (let i in classificationFields) {
+                let fromFieldID = classificationFields[i];
 				let fieldDef = uitools.tracklistFieldDefs[fromFieldID];
 				classificationMenu.action.submenu.push({
 					action: {
@@ -110,6 +115,7 @@
 							else if (type === 'copy') copyFieldToField(fromFieldID, toFieldID);
 						}
 					},
+                    disabled: (fromFieldID === toFieldID),
 					order: i,
 					grouporder: 0,
 					grouptitle: (type === 'swap') ? 'With:' : 'To:',
@@ -123,8 +129,9 @@
 				order: 0,
 				grouporder: 20
 			};
-			for (let fromFieldID of classificationFields) {
-				let fieldDef = uitools.tracklistFieldDefs[fromFieldID];
+			for (let i in classificationFields) {
+                let toFieldID = classificationFields[i];
+				let fieldDef = uitools.tracklistFieldDefs[toFieldID];
 				classificationMenu.action.submenu.push({
 					action: {
 						title: fieldDef.title,
@@ -133,6 +140,7 @@
 							else if (type === 'copy') copyFieldToField(fromFieldID, toFieldID);
 						}
 					},
+                    disabled: (fromFieldID === toFieldID),
 					order: i,
 					grouporder: 10
 				});
@@ -187,10 +195,20 @@
 					
 					// Comments and lyrics need to be retrieved asynchronously
 					if (typeof aFieldDef.getValueAsync === 'function') aField = await aFieldDef.getValueAsync(track); 
-					if (typeof bFieldDef.getValueAsync === 'function') bField = await bFieldDef.getValueAsync(track); 
+					if (typeof bFieldDef.getValueAsync === 'function') bField = await bFieldDef.getValueAsync(track);
+                    // a == date (int), b == non-date (string)
+                    if (isDateField(aFieldID) && !isDateField(bFieldID)) {
+                        aField = utils.myEncodeDate(aField);
+                        bField = utils.myDecodeDate(bField);
+                    } 
+                    // a == non-date (string), b == date (int)
+                    if (!isDateField(aFieldID) && isDateField(bFieldID)) {
+                        aField = utils.myDecodeDate(aField);
+                        bField = utils.myEncodeDate(bField);
+                    }
 					
-					aFieldDef.setValue(track, bField);
-					bFieldDef.setValue(track, aField);
+					aFieldDef.setValue(track, bField, true /* raw */);
+					bFieldDef.setValue(track, aField, true);
 					next();
 				}, () => {
 					uitools.toastMessage.show(sprintf("Modified %s tracks.", tracklist.count), {
@@ -207,10 +225,14 @@
 									let bField = track[bFieldID];
 									
 									if (typeof aFieldDef.getValueAsync === 'function') aField = await aFieldDef.getValueAsync(track); 
-									if (typeof bFieldDef.getValueAsync === 'function') bField = await bFieldDef.getValueAsync(track); 
+									if (typeof bFieldDef.getValueAsync === 'function') bField = await bFieldDef.getValueAsync(track);
+                                    // a == date (int), b == non-date (string)
+                                    if (isDateField(aFieldID) && !isDateField(bFieldID)) bField = utils.myDecodeDate(bField)
+                                    // a == non-date (string), b == date (int)
+                                    if (!isDateField(aFieldID) && isDateField(bFieldID)) aField = utils.myDecodeDate(aField);
 									
-									aFieldDef.setValue(track, bField);
-									bFieldDef.setValue(track, aField);
+									aFieldDef.setValue(track, bField, true);
+									bFieldDef.setValue(track, aField, true);
 									next();
 								});
 							};
@@ -242,14 +264,15 @@
 					let oldField = track[toFieldID];
 					
 					// Comments and lyrics need to be retrieved asynchronously
-					if (typeof fromFieldDef.getValueAsync === 'function') {
-						newField = await fromFieldDef.getValueAsync(track);
-					}
-					if (typeof toFieldDef.getValueAsync === 'function') {
-						oldField = await toFieldDef.getValueAsync(track);
-					}
+					if (typeof fromFieldDef.getValueAsync === 'function') newField = await fromFieldDef.getValueAsync(track);
+					if (typeof toFieldDef.getValueAsync === 'function') oldField = await toFieldDef.getValueAsync(track);
+                    // Date (int) -> non-date (string)
+                    if (isDateField(fromFieldID) && !isDateField(toFieldID)) newField = utils.myEncodeDate(newField);
+                    // Non-date (string) -> Date (int)
+                    if (!isDateField(fromFieldID) && isDateField(toFieldID)) newField = utils.myDecodeDate(newField);
+                    
 					cachedProperties[track.path] = oldField; // Cache the old property of the track to allow undoing
-					newFieldDef.setValue(track, newField); // Overwrite the track's field
+					toFieldDef.setValue(track, newField, true /* raw */); // Overwrite the track's field
 					next();
 				}, () => {
 					uitools.toastMessage.show(sprintf("Modified %s tracks.", tracklist.count), {
@@ -262,7 +285,7 @@
 							else {
 								tracklist.forEach(track => {
 									let oldField = cachedProperties[track.path];
-									oldFieldDef.setValue(track, oldField); // Reset it to its previous value
+									oldFieldDef.setValue(track, oldField, true); // Reset it to its previous value
 								});
 							};
 						}
