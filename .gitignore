@@ -1,2 +1,3 @@
 *.mmip
 .vscode
+node_modules
