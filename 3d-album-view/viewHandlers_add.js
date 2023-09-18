@@ -1,6 +1,8 @@
+/// <reference path="E:/Delphi/HTML5Monkey/bin/typescript/src/viewHandlers.ts"/>
+
 viewHandlers.FlowAlbumView = inheritHandler('FlowAlbumView', 'BaseList', {
     controlClass: 'FlowAlbumView',
-    title: _('3D Album View'),
+    title: _('3D Album view'),
     icon: 'browser',
     dataSourceType: 'albumlist',
     /**
@@ -156,7 +158,7 @@ viewHandlers.FlowAlbumView_tracks = inheritHandler('FlowAlbumView_tracks', 'Trac
 
 viewHandlers.FlowAlbumViewNowPlaying = inheritHandler('FlowAlbumViewNowPlaying', 'FlowAlbumView', {
     controlClass: 'FlowAlbumViewNowPlaying',
-    title: _('3D Album View'),
+    title: _('3D Album view'),
     icon: 'browser',
     dataSourceType: 'albumlist',
     onShow: function (control, view) {
