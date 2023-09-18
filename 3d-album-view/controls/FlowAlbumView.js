@@ -22,7 +22,7 @@ inheritClass('FlowAlbumView', Control, {
         var elem = document.createElement('div');
         parentElem.appendChild(elem);
         parentElem.classList.add('fill');
-        parentElem.setAttribute('tabindex', '-1');
+        parentElem.setAttribute('tabindex', '0');
         
         this.parent = elem;
         elem.classList.add('fill');
