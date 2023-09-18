@@ -17,6 +17,15 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
         elem.classList.remove('fill');
         elem.classList.add('threeDView-artistViewParent');
         this.parent.classList.add('threeDView-artistView');
+        
+        // If an albumSortByControl exists in the current screen, then use it to determine autoSortString
+        const albumSortByControl = qeid(currentTabControl.container, 'albumSortByControl');
+        if (albumSortByControl && albumSortByControl.controlClass && albumSortByControl.controlClass.sortString) {
+            this.autoSortString = albumSortByControl.controlClass.sortString;
+            this.localListen(albumSortByControl, 'change', () => {
+                this.autoSortString = albumSortByControl.controlClass.sortString;
+            })
+        }
     },
     cleanUp() {
         ArtistFlowAlbumView.$super.cleanUp.call(this);
