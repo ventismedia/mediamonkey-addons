@@ -2,7 +2,7 @@
     "title": "Copy and Swap Fields",
     "id": "fieldToField",
     "description": "Allows you to: (1) copy tracks' fields from one to another, e.g. Artist to Album Artist or Title to Album; and (2) swap two of the tracks' fields, e.g. swapping Album Artist and Artist.",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "author": "Ventis Media, Inc.",
     "type": "metadata",
 	"icon": "fieldToField.png"

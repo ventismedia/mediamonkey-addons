@@ -4,7 +4,7 @@
         return fieldID === 'date' || fieldID === 'origDate';
     }
 	
-	const supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'author', 'conductor', 'composer', 'director', 'lyricist', 'date', 'origDate', 'genre', 'comment', 'lyrics', ];
+	const supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'conductor', 'composer', 'director', 'lyricist', 'date', 'origDate', 'genre', 'comment', 'lyrics', ];
 	var classificationFields = ['tempo', 'mood', 'occasion', 'quality', 'initialKey'];
     
 	actions.copyFieldToField = {
