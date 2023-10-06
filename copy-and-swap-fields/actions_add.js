@@ -4,7 +4,7 @@
         return fieldID === 'date' || fieldID === 'origDate';
     }
 	
-	const supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'author', 'conductor', 'composer', 'date', 'director', 'comment', 'lyrics', 'origDate'];
+	const supportedFields = ['title', 'album', 'albumArtist', 'artist', 'actors', 'author', 'conductor', 'composer', 'director', 'lyricist', 'date', 'origDate', 'genre', 'comment', 'lyrics', ];
 	var classificationFields = ['tempo', 'mood', 'occasion', 'quality', 'initialKey'];
     
 	actions.copyFieldToField = {
@@ -110,12 +110,12 @@
 				ret.push({
 					action: {
 						title: fieldDef.title,
+                        disabled: (fromFieldID === toFieldID),
 						execute: () => {
 							if (type === 'swap') swapFields(fromFieldID, toFieldID);
 							else if (type === 'copy') copyFieldToField(fromFieldID, toFieldID);
 						}
 					},
-                    disabled: (fromFieldID === toFieldID),
 					order: i,
 					grouporder: 0,
 					grouptitle: (type === 'swap') ? 'With:' : 'To:',
@@ -135,12 +135,12 @@
 				classificationMenu.action.submenu.push({
 					action: {
 						title: fieldDef.title,
+                        disabled: (fromFieldID === toFieldID),
 						execute: () => {
 							if (type === 'swap') swapFields(fromFieldID, toFieldID);
 							else if (type === 'copy') copyFieldToField(fromFieldID, toFieldID);
 						}
 					},
-                    disabled: (fromFieldID === toFieldID),
 					order: i,
 					grouporder: 10
 				});
