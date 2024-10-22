@@ -1,0 +1,26 @@
+
+<div class="uiRows">
+	
+    <div class="flex row">
+        <label>Output file:</label>
+        <div data-id="editOutputFile" class="fill" data-control-class="Edit" data-init-params="{type: 'text'}"></div>
+        <div data-control-class="Button" data-id="btnOutputFile">Browse</div>
+    </div>
+	<fieldset>
+		<legend>Edit output</legend>
+		<table>
+			<tr data-tip="If provided, this text will appear in the file before the track summary.">
+				<td><label>Before</label></td>
+				<td class="flex">
+					<div data-id="outputBefore" class="flex fill" data-control-class="Edit" data-init-params="{type: 'text'}"></div>
+				</td>
+			</tr>
+			<tr data-tip="If provided, this text will appear in the file after the track summary.">
+				<td><label>After</label></td>
+				<td class="flex">
+					<div data-id="outputAfter" class="flex fill" data-control-class="Edit" data-init-params="{type: 'text'}"></div>
+				</td>
+			</tr>
+		</table>
+	</fieldset>
+</div>

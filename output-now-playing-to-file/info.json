@@ -1,0 +1,10 @@
+{
+    "title": "Output Currently Playing Track to File",
+    "id": "outputNowPlayingToFile",
+    "description": "Outputs the currently playing track to a specified file (like SMG)",
+    "version": "1.0.0",
+    "type": "general",
+    "author": "Drakinite",
+    "config": "config.js",
+    "icon": "music"
+}
