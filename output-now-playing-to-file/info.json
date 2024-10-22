@@ -1,7 +1,7 @@
 {
     "title": "Output Currently Playing Track to File",
     "id": "outputNowPlayingToFile",
-    "description": "Outputs the currently playing track to a specified file (like SMG)",
+    "description": "Outputs the currently playing track to a specified file with limited customization options.",
     "version": "1.0.0",
     "type": "general",
     "author": "Drakinite",
