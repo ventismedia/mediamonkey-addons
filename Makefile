@@ -1,4 +1,4 @@
-PACKER-ARGS=-b -y -a -p ./preamble.txt --preamble-js '/* %s */' --preamble-html '<!-- %s -->' --preamble-less '// %s'
+PACKER-ARGS=-b -y -a -p ./preamble.txt
 # -l ./license.txt
 
 # By default, Make treats a target as the output filename. We need to mark every subfolder as "phony", because otherwise, it'll just say there is nothing to do and exit.
@@ -35,7 +35,7 @@ lyrics-font-size:
 	pack-mmip $@ "Lyrics Font Size" $(PACKER-ARGS)
 
 output-now-playing-to-file:
-	pack-mmip $@ "Output Currently Playing Track To File" $(PACKER-ARGS)
+	pack-mmip $@/addon "Output Currently Playing Track To File" $(PACKER-ARGS)
 
 restore-beta-icons:
 	pack-mmip $@ "Restore Beta Icons" $(PACKER-ARGS)

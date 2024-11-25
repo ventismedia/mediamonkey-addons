@@ -5,8 +5,8 @@ window.whenReady(() => {
 	//listen for playback state to change
 	app.listen(app.player, 'playbackState', onPlaybackStateChange);
 	
-	var settings = getSettings();
-	var currentTimeout;
+	let settings = getSettings();
+	let currentTimeout: number;
 	
 	function getSettings() {
 		return app.getValue('outputNowPlayingToFile_outputOptions', {
