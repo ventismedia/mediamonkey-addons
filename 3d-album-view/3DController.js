@@ -49,7 +49,9 @@ class AlbumArtController{
         this.gradientCanvas.height = 256;
         this.gradientCtx = this.gradientCanvas.getContext('2d');
 		this.noImage = this.loader.load(noImageURI);
+        this.noImage.name = 'noImage';
 		this.gradient = this.loader.load(this.getGradientURI(gradColor[0], gradColor[1], gradColor[2]));
+        this.gradient.name = 'gradient';
         this.isPreloadingAA = false;
 	}
 	getArt(index, isMovingFast, forceLoadTexture, callback) {
@@ -99,10 +101,12 @@ class AlbumArtController{
                 _this.refreshFrameRequested = true; // Request to the controller that we want a frame to be rendered
             }
             else {
-                _this.arts[index] = _this.loader.load(resolvedPath, () => {
+                let newTexture =  _this.loader.load(resolvedPath, () => {
                     _this.refreshFrameRequested = true; // Request to the controller that we want a frame to be rendered
                 });
-                _this.loadedTextures[resolvedPath] = _this.arts[index];
+                newTexture.name = resolvedPath;
+                _this.arts[index] = newTexture;
+                _this.loadedTextures[resolvedPath] = newTexture;
             }
             if (callback) callback();
         }
@@ -259,6 +263,7 @@ class FlowController{
 			let mesh =  new THREE.Mesh(this.geometry, material);
 			//Reflection mesh
 			let reflectionMesh = new THREE.Mesh(this.geometry, material);
+            reflectionMesh.name = 'reflectionMesh';
 			reflectionMesh.position.y = -1 * PICTURE_SIZE;
 			//reflectionMesh.rotation.z = -1 * Math.PI;
 			reflectionMesh.scale.y = -1;
@@ -458,7 +463,6 @@ class FlowController{
 		this.position = pos;
 	}
 	_updateRaycast() {
-		
 		//Handle raycaster intersects
 		this.raycaster.setFromCamera( this.mouse, this.camera );
 		

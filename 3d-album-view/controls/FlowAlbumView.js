@@ -149,7 +149,7 @@ inheritClass('FlowAlbumView', Control, {
         }.bind(this);
         ODS('FlowAlbumView - hello world');
         this.localListen(parentElem, 'keydown', handleKeypress, true);
-        this.localListen(elem, 'mousemove', onMouseMove, false);
+        // this.localListen(elem, 'mousemove', onMouseMove, false);
         this.localListen(elem, 'layoutchange', onLayoutChange);
         this.localListen(this.container, 'datasourcechanged', onDataSourceChanged);
         this.localListen(this.renderer.domElement, 'webglcontextlost', onContextLost);
@@ -403,8 +403,16 @@ inheritClass('FlowAlbumView', Control, {
             console.error(err);
         }
 
+        /**
+         * @param {MouseEvent} e 
+         */
         function onMouseDown(e) {
             window.lastFocusedControl = _this.container;
+            let { offsetX, offsetY, button } = e;
+            let size = _this.renderer.getSize(new THREE.Vector2());
+            _this.controller.mouse.x = ( offsetX / size.x ) * 2 - 1;
+            _this.controller.mouse.y = - ( offsetY / size.y ) * 2 + 1;
+            
             _this.controller.onMouseDown(e);
         }
     },
