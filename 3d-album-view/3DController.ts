@@ -4,14 +4,14 @@ const noImageURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAA
 const NUM_ALBUMS_VISIBLE = 8;
 const PICTURE_SIZE = 6;
 const TOTAL_GEOMETRIES = 3 + (NUM_ALBUMS_VISIBLE * 2);
-var   SCROLL_SPEED = 0.145;
+var SCROLL_SPEED = 0.145;
 const FAST_MOVE_THRESHOLD = 50;
 const MIN_FRAME_TIME = 2000;
 const MIN_FRAME_TIME_STARTUP = 150; // Min frame time for the first few seconds of the control being initialized
 const WHEEL_AMOUNT = 0.12; // ratio of items scrolled to mouse wheel deltaY
 const HIGH_PICTURE_QUALITY = 512;
 const LOW_PICTURE_QUALITY = 200;
-var   SPACING = 1.5;
+var SPACING = 1.5;
 const WIDE_SPACING_MULTIPLE = 2;
 const fullDebug = false;
 
@@ -21,61 +21,81 @@ function displayToast(message) {
     });
 }
 
+import type * as ThreeJS from 'three';
+import Control from 'mediamonkey-types/controls/control';
+import { ExecutableAction } from 'mediamonkey-types/actions';
+import type FlowAlbumView from './controls/FlowAlbumView';
+
+declare global {
+    var stats: any;
+    var customPanel: any;
+    var Stats: any;
+    // @ts-ignore
+    const THREE: typeof ThreeJS;
+}
+
 window.whenReady(() => {
     if (window.Stats) {
         window.stats = new Stats();
         // 0: fps, 1: ms, 2: mb, 3+: custom
-        stats.showPanel( 0 );
-        document.body.appendChild( stats.dom );
+        stats.showPanel(0);
+        document.body.appendChild(stats.dom);
         stats.begin();
-        window.customPanel = stats.addPanel( new Stats.Panel( 'x', '#ff8', '#221' ) );
+        window.customPanel = stats.addPanel(new Stats.Panel('x', '#ff8', '#221'));
     }
     else {
-        window.stats = {begin: ()=>{}, end: () => {}, update: () => {}}  
-        window.customPanel = {update: ()=>{}};
-    } 
+        window.stats = { begin: () => { }, end: () => 0, update: () => { } }
+        window.customPanel = { update: () => { } };
+    }
 });
 
-class AlbumArtController{
-	constructor(gradColor) {
-        this.loader = new THREE.TextureLoader();
-		this.arts = [];
-		this.paths = [];
-        this.pathsById = [];
-        this.cancelTokens = {};
-        this.loadedTextures = {}; // To cache already-loaded textures (by path)
-        this.gradientCanvas = document.createElement('canvas');
+export class AlbumArtController {
+    loader: ThreeJS.TextureLoader = new THREE.TextureLoader()
+    arts: ThreeJS.Texture[] = [];
+    paths: string[] = [];
+    pathsById = [];
+    cancelTokens = {};
+    loadedTextures = {}; // To cache already-loaded textures (by path)
+    gradientCanvas = document.createElement('canvas');
+    gradientCtx: CanvasRenderingContext2D;
+    noImage = this.loader.load(noImageURI);
+    gradient: ThreeJS.Texture;
+    isPreloadingAA = false;
+    PICTURE_QUALITY?: number;
+    dataSource?: DataSource<Album>;
+    refreshFrameRequested = false;
+    constructor(gradColor) {
         this.gradientCanvas.width = 256;
         this.gradientCanvas.height = 256;
-        this.gradientCtx = this.gradientCanvas.getContext('2d');
-		this.noImage = this.loader.load(noImageURI);
+        let ctx = this.gradientCanvas.getContext('2d');
+        assert(ctx, 'could not get gradient context!');
+        this.gradientCtx = ctx;
         this.noImage.name = 'noImage';
-		this.gradient = this.loader.load(this.getGradientURI(gradColor[0], gradColor[1], gradColor[2]));
+        this.gradient = this.loader.load(this.getGradientURI(gradColor[0], gradColor[1], gradColor[2]));
         this.gradient.name = 'gradient';
-        this.isPreloadingAA = false;
-	}
-	getArt(index, isMovingFast, forceLoadTexture, callback) {
+    }
+    getArt(index: number, isMovingFast: boolean, forceLoadTexture?: boolean, callback?: AnyCallback) {
         index = parseInt(index); // in the case where index is "-0", it results in a crash so we need to turn -0 into 0
-        
+
         const _this = this;
-        
-		let art = this.arts[index];
-		if (art && art.image) {
+
+        let art = this.arts[index];
+        if (art && art.image) {
             if (callback) callback();
-			return art;
-		}
-		else {
-			//load image, but in the meantime, return the noImage bit
-			if (this.paths[index] && !this.cancelTokens[index]) {
+            return art;
+        }
+        else {
+            //load image, but in the meantime, return the noImage bit
+            if (this.paths[index] && !this.cancelTokens[index]) {
                 loadArtByPath(this.paths[index]);
-			}
+            }
             // if thumb has not been loaded yet, then load it and save to the paths array
             else {
                 if (this.dataSource && !isMovingFast) {
                     this.dataSource.locked(() => {
                         if (!this.PICTURE_QUALITY) this.PICTURE_QUALITY = HIGH_PICTURE_QUALITY;
-                        
-                        let album = this.dataSource.getValue(index);                
+
+                        let album = this.dataSource?.getValue(index);
                         if (album) {
                             let cancelToken = album.getThumbAsync(this.PICTURE_QUALITY, this.PICTURE_QUALITY, path => {
                                 this.paths[index] = path;
@@ -89,9 +109,9 @@ class AlbumArtController{
                     });
                 }
             }
-			return this.noImage;
-		}
-        
+            return this.noImage;
+        }
+
         function loadArtByPath(path) {
             let resolvedPath = resolveToValue(path);
             if (fullDebug) ODS(`FlowController - Loading index=${index} path ${resolvedPath}`);
@@ -101,7 +121,7 @@ class AlbumArtController{
                 _this.refreshFrameRequested = true; // Request to the controller that we want a frame to be rendered
             }
             else {
-                let newTexture =  _this.loader.load(resolvedPath, () => {
+                let newTexture = _this.loader.load(resolvedPath, () => {
                     _this.refreshFrameRequested = true; // Request to the controller that we want a frame to be rendered
                 });
                 newTexture.name = resolvedPath;
@@ -110,11 +130,11 @@ class AlbumArtController{
             }
             if (callback) callback();
         }
-	}
+    }
     flushUnfinishedTasks(visibleStart, visibleEnd) {
         if (this.isPreloadingAA) return; // If we're preloading AA, we don't want to cancel these tasks
-        
-        let tokensToDelete = [];
+
+        let tokensToDelete: number[] = [];
         for (let key in this.cancelTokens) {
             let idx = parseInt(key);
             if (idx < visibleStart || idx > visibleEnd) {
@@ -130,23 +150,23 @@ class AlbumArtController{
     changeGradient(gradColor) {
         this.gradient = this.loader.load(this.getGradientURI(gradColor[0], gradColor[1], gradColor[2]));
     }
-    getGradientURI(r,g,b) {
+    getGradientURI(r, g, b) {
         let ctx = this.gradientCtx;
         let canv = this.gradientCanvas;
         const WIDTH = 256;
-        
+
         var grd1 = ctx.createLinearGradient(0, 0, 0, WIDTH);
-        grd1.addColorStop(0, rgba(r,g,b,0));
-        grd1.addColorStop(1, rgba(r,g,b,1));
-        
+        grd1.addColorStop(0, rgba(r, g, b, 0));
+        grd1.addColorStop(1, rgba(r, g, b, 1));
+
         var grd2 = ctx.createLinearGradient(0, 0, 0, WIDTH);
-        grd2.addColorStop(0, rgba(r,g,b,0.35));
-        grd2.addColorStop(0.33, rgba(r,g,b,0.6));
-        
+        grd2.addColorStop(0, rgba(r, g, b, 0.35));
+        grd2.addColorStop(0.33, rgba(r, g, b, 0.6));
+
         var grd3 = ctx.createLinearGradient(0, 0, 0, WIDTH);
-        grd3.addColorStop(0.22, rgba(r,g,b,0));
-        grd3.addColorStop(1, rgba(r,g,b,0.3));
-        
+        grd3.addColorStop(0.22, rgba(r, g, b, 0));
+        grd3.addColorStop(1, rgba(r, g, b, 0.3));
+
         ctx.clearRect(0, 0, WIDTH, WIDTH);
         ctx.fillStyle = grd1;
         ctx.fillRect(0, 0, WIDTH, WIDTH);
@@ -154,27 +174,26 @@ class AlbumArtController{
         ctx.fillRect(0, 0, WIDTH, WIDTH);
         ctx.fillStyle = grd3;
         ctx.fillRect(0, 0, WIDTH, WIDTH);
-        
+
         const uri = canv.toDataURL();
         return uri;
-        
-        function rgba(r,g,b,a) {
+
+        function rgba(r, g, b, a) {
             return 'rgba(' + String(r) + ',' + String(g) + ',' + String(b) + ',' + String(a) + ')';
         }
     }
-	cleanUp() {
+    cleanUp() {
         this.clear(true);
-		this.arts = null;
-		this.paths = null;
-        this.pathsById = null;
-        this.loader = null;
-	}
+        this.arts = [];
+        this.paths = [];
+        this.pathsById = [];
+    }
     setDataSource(newDataSource) {
         this.dataSource = newDataSource;
         // Reset arts and paths, but don't reset the cached thumbs by path (since loading a texture takes time)
         this.clear();
     }
-    clear(purgeImages) {
+    clear(purgeImages?: boolean) {
         // Clear memory used by cached images
         if (purgeImages == true) {
             for (let path in this.loadedTextures) {
@@ -194,40 +213,65 @@ class AlbumArtController{
     }
 }
 
-class FlowController{
-	constructor(control) {
-        if (fullDebug) ODS('FlowController - constructor')       
+interface FlowControllerObject {
+    mesh: ThreeJS.Mesh<ThreeJS.PlaneGeometry, ThreeJS.MeshBasicMaterial>,
+    reflectionMesh: ThreeJS.Mesh,
+    gradientMesh: ThreeJS.Mesh,
+    position: number,
+    isMousedOver: boolean,
+}
+
+export default class FlowController {
+    parentElement: HTMLDivElement;
+    control: FlowAlbumView;
+    scene: ThreeJS.Scene;
+    camera: ThreeJS.Camera;
+    objects: FlowControllerObject[] = [];
+    position = 0;
+    lastPosition = 0;
+    lastFrameTime = 0;
+    target = 0;
+    _lastLeftMove = 0;
+    _lastRightMove = 0;
+    _lastRaycast = 0;
+    enabled = true;
+    _mousedOverObject: FlowControllerObject | null = null;
+    SPACING: number;
+    MIN_FRAME_TIME: number;
+    fastMoveEnabled = true;
+    albumArts: AlbumArtController;
+    DOMControls: ReturnType<FlowController["_createDOMControls"]>;
+    DOMText: ReturnType<FlowController["_createDOMText"]>;
+    mouse = new THREE.Vector2();
+    raycaster = new THREE.Raycaster();
+    maxPosition = 100;
+    geometry = new THREE.PlaneBufferGeometry(PICTURE_SIZE, PICTURE_SIZE, 1, 1);
+    defaultBackgroundColor?: string[];
+    gradientMaterial: ThreeJS.MeshBasicMaterial;
+    forceRefresh = false;
+    _seekHandler: AnyCallback;
+    dataSource?: AlbumList;
+    _dataSource?: AlbumList;
+    _cleanUpCalled = false;
+    constructor(control: FlowAlbumView) {
+        if (fullDebug) ODS('FlowController - constructor')
         this.parentElement = control.parent;
         this.control = control;
         this.scene = control.scene;
         this.camera = control.camera;
-        
-		this.objects = [];
-		this.position = 0;
-		this.lastPosition = 0;
-		this.lastFrameTime = 0;
-		this.target = 0;
-		this._lastLeftMove = 0;
-		this._lastRightMove = 0;
-		this._lastRaycast = 0;
-		this.enabled = true;
-		this._mousedOverObject = null;
-        
+
         this.SPACING = 1.5 * control.settings.spacingMultiplier;
-        this.MIN_FRAME_TIME = (control.settings.capFramerate) ? MIN_FRAME_TIME*2 : MIN_FRAME_TIME;
-		
-        let defaultBackgroundColor;
-        
-		this.fastMoveEnabled = true;
-		if (fullDebug) ODS('FlowController - Creating albumArts, DOMControls, DOMText');
+        this.MIN_FRAME_TIME = (control.settings.capFramerate) ? MIN_FRAME_TIME * 2 : MIN_FRAME_TIME;
+
+        if (fullDebug) ODS('FlowController - Creating albumArts, DOMControls, DOMText');
         if (control.defaultStyles && control.defaultStyles.backgroundColor) {
             // split rgb(#,#,#) into [#,#,#]
-            defaultBackgroundColor = control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
+            this.defaultBackgroundColor = control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
             // for custom-set background color
             let rgbArr;
             if (control.settings && control.settings.backgroundColor) rgbArr = control.settings.backgroundColor;
-            else rgbArr = defaultBackgroundColor;
-            
+            else rgbArr = this.defaultBackgroundColor;
+
             if (rgbArr && rgbArr.length === 3) {
                 this.albumArts = new AlbumArtController(rgbArr);
                 // Set picture quality
@@ -236,274 +280,279 @@ class FlowController{
             else throw new Error('Error parsing backgroundColor RGB values. Style is set to: ' + control.defaultStyles.backgroundColor)
         }
         else throw new Error('The defaultStyles object does not have backgroundColor defined');
-        
+
         if (fullDebug) ODS('FlowController - created AAController');
-		this.DOMControls = this._createDOMControls();
+        this.DOMControls = this._createDOMControls();
         this.DOMText = this._createDOMText();
-        
-        this.mouse = new THREE.Vector2();
-        this.raycaster = new THREE.Raycaster();
-		
-		const noImage = this.albumArts.noImage;
-		
-		this.maxPosition = 100;
-		if (fullDebug) ODS('FlowController - Creating geometry & material');
-		this.geometry = new THREE.PlaneBufferGeometry(PICTURE_SIZE, PICTURE_SIZE, 1, 1);
-		const gradientMaterial = new THREE.MeshBasicMaterial({
-			map: this.albumArts.gradient, 
-			opacity: 1,
-			transparent: true,
-		});
-		
-		if (fullDebug) ODS('FlowController - Creating objects');
-		this.objects = [];
-		for (var i = 0; i < TOTAL_GEOMETRIES; i++) {
-			//Regular album
-			let material = new THREE.MeshBasicMaterial({map: noImage, transparent: true,});
-			let mesh =  new THREE.Mesh(this.geometry, material);
-			//Reflection mesh
-			let reflectionMesh = new THREE.Mesh(this.geometry, material);
+
+        // so we can unlisten with the function reference
+        this._seekHandler = this._seekMouseMove.bind(this);
+
+        const noImage = this.albumArts.noImage;
+
+        this.maxPosition = 100;
+        if (fullDebug) ODS('FlowController - Creating geometry & material');
+        this.gradientMaterial = new THREE.MeshBasicMaterial({
+            map: this.albumArts.gradient,
+            opacity: 1,
+            transparent: true,
+        });
+
+        if (fullDebug) ODS('FlowController - Creating objects');
+        for (var i = 0; i < TOTAL_GEOMETRIES; i++) {
+            //Regular album
+            let material = new THREE.MeshBasicMaterial({ map: noImage, transparent: true, });
+            let mesh = new THREE.Mesh(this.geometry, material);
+            //Reflection mesh
+            let reflectionMesh = new THREE.Mesh(this.geometry, material);
             reflectionMesh.name = 'reflectionMesh';
-			reflectionMesh.position.y = -1 * PICTURE_SIZE;
-			//reflectionMesh.rotation.z = -1 * Math.PI;
-			reflectionMesh.scale.y = -1;
-			//Gradient (for reflection)
-			let gradientMesh = new THREE.Mesh(this.geometry, gradientMaterial);
-			gradientMesh.position.y = -1 * PICTURE_SIZE;
-			
-			let order = 'XYZ';
-			mesh.rotation.reorder(order);
-			reflectionMesh.rotation.reorder(order);
-			gradientMesh.rotation.reorder(order);
-			
-            if (fullDebug) ODS('FlowController - object #'+i);
+            reflectionMesh.position.y = -1 * PICTURE_SIZE;
+            //reflectionMesh.rotation.z = -1 * Math.PI;
+            reflectionMesh.scale.y = -1;
+            //Gradient (for reflection)
+            let gradientMesh = new THREE.Mesh(this.geometry, this.gradientMaterial);
+            gradientMesh.position.y = -1 * PICTURE_SIZE;
+
+            let order = 'XYZ';
+            mesh.rotation.reorder(order);
+            reflectionMesh.rotation.reorder(order);
+            gradientMesh.rotation.reorder(order);
+
+            if (fullDebug) ODS('FlowController - object #' + i);
             if (!mesh) throw new Error('FlowController - Mesh not defined');
             if (!reflectionMesh) throw new Error('FlowController - reflectionMesh not defined');
             if (!gradientMesh) throw new Error('FlowController - gradientMesh not defined');
-            
-			let pos = i - NUM_ALBUMS_VISIBLE - 1;
-			this.objects[i] = {
-				mesh: mesh,
-				reflectionMesh: reflectionMesh,
-				gradientMesh: gradientMesh,
-				position: pos,
-				isMousedOver: false,
-			}
-			this.scene.add(mesh);
-			this.scene.add(reflectionMesh);
-			this.scene.add(gradientMesh);
-		}
-        
-        this.handleSettingsChange = function() {
-            var sett = this.control.settings;
-            this.albumArts.PICTURE_QUALITY = (sett.highResThumbnails == true) ? HIGH_PICTURE_QUALITY : LOW_PICTURE_QUALITY;
-            this.MIN_FRAME_TIME = (control.settings.capFramerate) ? MIN_FRAME_TIME*2 : MIN_FRAME_TIME;
-            // Update the gradient map to the appropriate background color
-            if (sett.backgroundColor) this.albumArts.changeGradient(sett.backgroundColor);
-            else {
-                if (control.defaultStyles) defaultBackgroundColor = control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
-                this.albumArts.changeGradient(defaultBackgroundColor);
+
+            let pos = i - NUM_ALBUMS_VISIBLE - 1;
+            this.objects[i] = {
+                mesh: mesh,
+                reflectionMesh: reflectionMesh,
+                gradientMesh: gradientMesh,
+                position: pos,
+                isMousedOver: false,
             }
-            gradientMaterial.map = this.albumArts.gradient;
-            this._updateCurrentAlbum(true);
-        }.bind(this);
-	}
-	/**
-	 * Animates the scene.
-	 * @returns {boolean} Whether a frame was rendered.
-	 */
-	animate() {
-		if (!this.enabled) return false;
-        
+            this.scene.add(mesh);
+            this.scene.add(reflectionMesh);
+            this.scene.add(gradientMesh);
+        }
+    }
+
+    handleSettingsChange() {
+        var sett = this.control.settings;
+        this.albumArts.PICTURE_QUALITY = (sett.highResThumbnails == true) ? HIGH_PICTURE_QUALITY : LOW_PICTURE_QUALITY;
+        this.MIN_FRAME_TIME = (sett.capFramerate) ? MIN_FRAME_TIME * 2 : MIN_FRAME_TIME;
+        // Update the gradient map to the appropriate background color
+        if (sett.backgroundColor) this.albumArts.changeGradient(sett.backgroundColor);
+        else {
+            if (this.control.defaultStyles) this.defaultBackgroundColor = this.control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
+            this.albumArts.changeGradient(this.defaultBackgroundColor);
+        }
+        this.gradientMaterial.map = this.albumArts.gradient;
+        this._updateCurrentAlbum(true);
+
+    }
+
+    /**
+     * Animates the scene.
+     * @returns {boolean} Whether a frame was rendered.
+     */
+    animate() {
+        if (!this.enabled) return false;
+
         // this.control._setCornerBoxText(`target: ${this.target} Position: ${this.position} forceRefresh: ${this.forceRefresh}`);
-        
+
         if (this.target > 0) this.target = 0;
-        else if (this.target <= 0-this.maxPosition) this.target = 0-this.maxPosition + 1;
-		
-		const startTime = Date.now();
-        
+        else if (this.target <= 0 - this.maxPosition) this.target = 0 - this.maxPosition + 1;
+
+        const startTime = Date.now();
+
         let sett = this.control.settings;
-        
-		let diff = this.target - this.position;
+
+        let diff = this.target - this.position;
         // Logic to determine whether to skip this frame
-		if (diff === 0 && !this.forceRefresh && !this.albumArts.refreshFrameRequested && startTime - this.lastFrameTime < this.MIN_FRAME_TIME) return false;
-		// if (diff === 0 && !this.forceRefresh && !this.albumArts.refreshFrameRequested &&
+        if (diff === 0 && !this.forceRefresh && !this.albumArts.refreshFrameRequested && startTime - this.lastFrameTime < this.MIN_FRAME_TIME) return false;
+        // if (diff === 0 && !this.forceRefresh && !this.albumArts.refreshFrameRequested &&
         //     ((startTime - this.lastFrameTime < this.MIN_FRAME_TIME && startTime - this.control._initializeTime > 3000) || 
         //     (startTime - this.lastFrameTime < MIN_FRAME_TIME_STARTUP)) // During first x seconds, use a lower min_frame_time
         //     ) return false;
-        if (startTime - this.lastFrameTime < 1000/60 && this.control.settings.capFramerate) return false;
-        
+        if (startTime - this.lastFrameTime < 1000 / 60 && this.control.settings.capFramerate) return false;
+
         this.albumArts.refreshFrameRequested = false;
-        
-		//manage velocity
-		
-		let velocity = 0;
-		// Move to target, faster when target is farther away
-		if (Math.abs(diff) > 0.001) {
-			velocity = SCROLL_SPEED * (diff);
-		}
-		//if we are super close, just snap
-		else
-			this._snap();
-        
+
+        //manage velocity
+
+        let velocity = 0;
+        // Move to target, faster when target is farther away
+        if (Math.abs(diff) > 0.001) {
+            velocity = SCROLL_SPEED * (diff);
+        }
+        //if we are super close, just snap
+        else
+            this._snap();
+
         // Throttle carousel speed to prevent the thumbnails from disappearing
         let absV = Math.abs(velocity);
         if (absV > 18 && sett.throttleCarouselSpeed)
-            velocity = (18 + Math.random()/2) * Math.sign(velocity);
-		
-		this._setPosition(this.position + velocity);
-        
+            velocity = (18 + Math.random() / 2) * Math.sign(velocity);
+
+        this._setPosition(this.position + velocity);
+
         let isMovingFast = Math.abs(velocity) > 0.5;
         let isMovingSlow = Math.abs(velocity) < 0.25;
-        
+
         customPanel.update(velocity, 60);
-        
+
         // If the carousel is moving fast, then clear the text from the current album
         if (isMovingFast && this.DOMText.currentAlbumIdx >= 0) {
-            this.setDOMText({header: '', subheader: '', line1: '', line2: ''});
+            this.setDOMText({ header: '', subheader: '', line1: '', line2: '' });
         }
         else {
-            this._updateCurrentAlbum(undefined, !isMovingSlow);
+            // JL TODO: investigate the !isMovingSlow call, did I cause a regression? (removed 2nd param just to appease TS)
+            this._updateCurrentAlbum(undefined);
+            // this._updateCurrentAlbum(undefined, !isMovingSlow);
         }
-		
-		//Update each object
-		for (var i = 0; i < this.objects.length; i++) {
-			let object = this.objects[i];
-			
-			//update album art for this item
-			let idx = -1*this.position + object.position;
-			let roundedIdx = Math.round(idx);
-			if (idx - roundedIdx < 0.2) {
-				let newArt = this.albumArts.getArt(roundedIdx, isMovingFast);
-				if (object.mesh.material.map.uuid !== newArt) {
-					object.mesh.material.map = newArt;
-				}
+
+        //Update each object
+        for (var i = 0; i < this.objects.length; i++) {
+            let object = this.objects[i];
+
+            //update album art for this item
+            let idx = -1 * this.position + object.position;
+            let roundedIdx = Math.round(idx);
+            if (idx - roundedIdx < 0.2) {
+                let newArt = this.albumArts.getArt(roundedIdx, isMovingFast);
+                // assert(!Array.isArray(object.mesh.material))
+                // @ts-ignore TODO LOOK AT THIS
+                if (object.mesh.material.map?.uuid !== newArt) {
+                    console.log('setting newart');
+                    object.mesh.material.map = newArt;
+                }
                 // If the art provided is the noImage art, then set it to transparent; otherwise make sure it's opaque
                 // If all thumbnails enable transparency, then there will be graphical glitches
                 object.mesh.material.transparent = (newArt === this.albumArts.noImage);
-			}
-			
-			//hide if < 0 or > maximum
-			if (roundedIdx >= this.maxPosition || roundedIdx < 0) {
-				object.mesh.visible = false;
-				object.reflectionMesh.visible = false;
-				object.gradientMesh.visible = false;
-			}
-			else {
-				object.mesh.visible = true;
-				object.reflectionMesh.visible = true;
-				object.gradientMesh.visible = true;
-			}
-			
-			let p = object.position;
+            }
+
+            //hide if < 0 or > maximum
+            if (roundedIdx >= this.maxPosition || roundedIdx < 0) {
+                object.mesh.visible = false;
+                object.reflectionMesh.visible = false;
+                object.gradientMesh.visible = false;
+            }
+            else {
+                object.mesh.visible = true;
+                object.reflectionMesh.visible = true;
+                object.gradientMesh.visible = true;
+            }
+
+            let p = object.position;
             let absP = Math.abs(p);
-			// eased components for -1 < p < 1 (multiply the z)
-			let q = (absP<1) ? (-0.5*(Math.cos(Math.PI*p))+0.5) : 1;		// angle
-			let r = (absP<1) ? (Math.pow(p, 2)) : 1; 					// position
-			let rotY = ( (p==0) ? 0 : ( (p>0) ? Math.PI/-4 : Math.PI/4 ) ) * q;
-			let posX = p*this.SPACING + (p>0?1:-1)*(Math.min(absP,1)*2/* + Math.pow(0.3*absP, 2)*/);
-			let posZ = -1*(Math.abs(q*3)) * r - 0.05*absP;               // z position; Slightly angled backward to ensure that the camera sees the objects layered correctly (to avoid transparency glitches)
-			let showoffRot = (1 - q) * -0.25;									// x rotation for center album
-			let showoffDiff = PICTURE_SIZE * Math.sin(showoffRot);
-			let rotZ = showoffRot * rotY * 0.5; 								// to correct for double rotation
-			
-			//temp
-			object.q = q; object.r = r;
-			
-			object.mesh.rotation.y = rotY;
-			object.mesh.rotation.x = showoffRot;
-			object.mesh.rotation.z = -1 * rotZ;
-			object.mesh.position.x = posX;
-			object.mesh.position.z = posZ;
-			
-			object.reflectionMesh.rotation.y = rotY;
-			object.reflectionMesh.rotation.z = rotZ;
-			object.reflectionMesh.position.x = posX;
-			object.reflectionMesh.position.z = posZ - showoffDiff/2;
-			object.reflectionMesh.position.y = -1*PICTURE_SIZE - showoffDiff/2 * 0.13 * (1 - q);
-			
-			object.gradientMesh.rotation.y = rotY;
-			object.gradientMesh.rotation.z = rotZ;
-			object.gradientMesh.position.x = posX;
-			object.gradientMesh.position.z = posZ - showoffDiff/2 + 0.001;
-			object.gradientMesh.position.y = -1*PICTURE_SIZE - showoffDiff/2 * 0.13 * (1 - q);
-			
-			object.position += this.position - this.lastPosition;
-			//snap
-			if (Number.isInteger(this.position)) 
+            // eased components for -1 < p < 1 (multiply the z)
+            let q = (absP < 1) ? (-0.5 * (Math.cos(Math.PI * p)) + 0.5) : 1;		// angle
+            let r = (absP < 1) ? (Math.pow(p, 2)) : 1; 					// position
+            let rotY = ((p == 0) ? 0 : ((p > 0) ? Math.PI / -4 : Math.PI / 4)) * q;
+            let posX = p * this.SPACING + (p > 0 ? 1 : -1) * (Math.min(absP, 1) * 2/* + Math.pow(0.3*absP, 2)*/);
+            let posZ = -1 * (Math.abs(q * 3)) * r - 0.05 * absP;               // z position; Slightly angled backward to ensure that the camera sees the objects layered correctly (to avoid transparency glitches)
+            let showoffRot = (1 - q) * -0.25;									// x rotation for center album
+            let showoffDiff = PICTURE_SIZE * Math.sin(showoffRot);
+            let rotZ = showoffRot * rotY * 0.5; 								// to correct for double rotation
+
+            //temp
+            // object.q = q; object.r = r;
+
+            object.mesh.rotation.y = rotY;
+            object.mesh.rotation.x = showoffRot;
+            object.mesh.rotation.z = -1 * rotZ;
+            object.mesh.position.x = posX;
+            object.mesh.position.z = posZ;
+
+            object.reflectionMesh.rotation.y = rotY;
+            object.reflectionMesh.rotation.z = rotZ;
+            object.reflectionMesh.position.x = posX;
+            object.reflectionMesh.position.z = posZ - showoffDiff / 2;
+            object.reflectionMesh.position.y = -1 * PICTURE_SIZE - showoffDiff / 2 * 0.13 * (1 - q);
+
+            object.gradientMesh.rotation.y = rotY;
+            object.gradientMesh.rotation.z = rotZ;
+            object.gradientMesh.position.x = posX;
+            object.gradientMesh.position.z = posZ - showoffDiff / 2 + 0.001;
+            object.gradientMesh.position.y = -1 * PICTURE_SIZE - showoffDiff / 2 * 0.13 * (1 - q);
+
+            object.position += this.position - this.lastPosition;
+            //snap
+            if (Number.isInteger(this.position))
                 object.position = Math.round(object.position);
-			
-			//move object position to right if it's too far to the left
-			if (object.position <= -1 * NUM_ALBUMS_VISIBLE - 2)
-				object.position += TOTAL_GEOMETRIES;
-			//move to left if too far to the right
-			else if (object.position >= NUM_ALBUMS_VISIBLE + 2)
-				object.position -= TOTAL_GEOMETRIES;
-		}
-        
+
+            //move object position to right if it's too far to the left
+            if (object.position <= -1 * NUM_ALBUMS_VISIBLE - 2)
+                object.position += TOTAL_GEOMETRIES;
+            //move to left if too far to the right
+            else if (object.position >= NUM_ALBUMS_VISIBLE + 2)
+                object.position -= TOTAL_GEOMETRIES;
+        }
+
         // Clear unfinished tasks
-        let roundPosition = Math.round(-1*this.position);
-        this.albumArts.flushUnfinishedTasks( roundPosition - NUM_ALBUMS_VISIBLE - 1, roundPosition + NUM_ALBUMS_VISIBLE + 1);
-        
-		const endTime = Date.now();
-		
-		//finally, set the lastPosition to the position at the end of this frame.
-		this.lastPosition = this.position;
-		this.lastFrameTime = endTime;
-		
-		return true;
-	}
-	_snap() {
-		if (Math.abs(Math.round(this.position) - this.position) != 0) {
-		} 
-		this._setPosition(Math.round(this.position));
-	}
-	_setPosition(pos) {
-		//this.lastPosition = this.position;
-		this.position = pos;
-	}
-	_updateRaycast() {
-		//Handle raycaster intersects
-		this.raycaster.setFromCamera( this.mouse, this.camera );
-		
-		const intersects = this.raycaster.intersectObjects(this.scene.children);
-		
-		if (intersects.length == 0) this._mousedOverObject = null;
-		else {
-			//find the closest intersect
-			let closestDistance = 1000;
-			let closestObject = null;
-			for (let i = 0; i < intersects.length; i++) {
-				let intersect = intersects[i];
-				if (intersect.distance < closestDistance) {
-					closestDistance = intersect.distance;
-					closestObject = intersect.object;
-				}
-			}
-			//find which object it is
+        let roundPosition = Math.round(-1 * this.position);
+        this.albumArts.flushUnfinishedTasks(roundPosition - NUM_ALBUMS_VISIBLE - 1, roundPosition + NUM_ALBUMS_VISIBLE + 1);
+
+        const endTime = Date.now();
+
+        //finally, set the lastPosition to the position at the end of this frame.
+        this.lastPosition = this.position;
+        this.lastFrameTime = endTime;
+
+        return true;
+    }
+    _snap() {
+        if (Math.abs(Math.round(this.position) - this.position) != 0) {
+        }
+        this._setPosition(Math.round(this.position));
+    }
+    _setPosition(pos) {
+        //this.lastPosition = this.position;
+        this.position = pos;
+    }
+    _updateRaycast() {
+        //Handle raycaster intersects
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+        if (intersects.length == 0) this._mousedOverObject = null;
+        else {
+            //find the closest intersect
+            let closestDistance = 1000;
+            let closestObject: ThreeJS.Object3D | null = null;
+            for (let i = 0; i < intersects.length; i++) {
+                let intersect = intersects[i];
+                if (intersect.distance < closestDistance) {
+                    closestDistance = intersect.distance;
+                    closestObject = intersect.object;
+                }
+            }
+            //find which object it is
             for (let i = 0; i < this.objects.length; i++) {
                 let object = this.objects[i];
-				if (object.mesh === closestObject && object.mesh.visible) {
-					object.isMousedOver = true;
-					this._mousedOverObject = object;
-				}
-				else {
-					object.isMousedOver = false;
-				}
-			}
-		}
-	}
+                if (object.mesh === closestObject && object.mesh.visible) {
+                    object.isMousedOver = true;
+                    this._mousedOverObject = object;
+                }
+                else {
+                    object.isMousedOver = false;
+                }
+            }
+        }
+    }
     // Do not directly reference _seekMouseMove; instead, use _seekHandler (which is binded to this object)
     _seekMouseMove(e) {
         let x = e.clientX;
         let rect = this.DOMControls.DOMRect;
-        let barWidth = this.DOMControls.barWidth/2;
+        let barWidth = this.DOMControls.barWidth / 2;
         let barPadding = this.DOMControls.barPadding;
-        
+
         let barLeft;
         let position;
         let maxPosition = this.maxPosition - 1;
-        
+
         // too far to the left
         if (x < rect.left + barWidth + barPadding) {
             barLeft = barPadding;
@@ -511,33 +560,33 @@ class FlowController{
         }
         // too far to the right
         else if (x > rect.width + rect.left - barWidth - barPadding) {
-            barLeft = rect.width - barWidth*2 - barPadding;
+            barLeft = rect.width - barWidth * 2 - barPadding;
             position = maxPosition;
         }
         // inside bounds
         else {
             barLeft = Math.floor(x - rect.left - barWidth);
-            position = Math.round((maxPosition) * (x - rect.left - barWidth) / (rect.width - barWidth*2));
+            position = Math.round((maxPosition) * (x - rect.left - barWidth) / (rect.width - barWidth * 2));
         }
-        
+
         this.target = -1 * position;
-        
+
         this.DOMControls.barDrag.style.left = barLeft + 'px';
     }
     // used whenever target is modified by another source
     _updateBarPosition() {
         let rect = this.DOMControls.DOMRect;
-        let barWidth = this.DOMControls.barWidth/2;
+        let barWidth = this.DOMControls.barWidth / 2;
         let barPadding = this.DOMControls.barPadding;
         let maxPosition = this.maxPosition - 1;
-        
+
         //make sure target is within bounds
         if (this.target > 0) this.target = 0;
-        else if (this.target <= 0-this.maxPosition) this.target = 0-this.maxPosition + 1;
-        
+        else if (this.target <= 0 - this.maxPosition) this.target = 0 - this.maxPosition + 1;
+
         //update bar position
-        let barLeft = Math.round( (1 - (this.target - -1*maxPosition) / maxPosition) * (rect.width - barWidth*2 - barPadding*2) + barPadding);
-        
+        let barLeft = Math.round((1 - (this.target - -1 * maxPosition) / maxPosition) * (rect.width - barWidth * 2 - barPadding * 2) + barPadding);
+
         this.DOMControls.barDrag.style.left = barLeft + 'px';
     }
     _seekStart(e) {
@@ -548,33 +597,31 @@ class FlowController{
     _seekEnd() {
         document.removeEventListener('mousemove', this._seekHandler);
     }
-    disableDOMControls () {
+    disableDOMControls() {
         this.DOMControls.barContainer.style.display = 'none';
     }
-	_createDOMControls() {
-		let barContainer = document.createElement('div');
-		let barParent = document.createElement('div');
-		let bar = document.createElement('div');
-		let barDrag = document.createElement('div');
-		let arrowLeft = document.createElement('div');
-		let arrowRight = document.createElement('div');
-		
-		barContainer.classList.add('threeDView-seekBarContainer');
-		barParent.classList.add('threeDView-seekBarParent');
-		bar.classList.add('threeDView-seekBar');
-		barDrag.classList.add('threeDView-seekBar-drag');
-		arrowLeft.classList.add('threeDView-seekBar-arrowLeft');
-		arrowRight.classList.add('threeDView-seekBar-arrowRight');
-		
-		barContainer.appendChild(barParent);
-		barParent.appendChild(arrowLeft);
-		barParent.appendChild(arrowRight);
-		barParent.appendChild(bar);
-		bar.appendChild(barDrag);
-		this.parentElement.appendChild(barContainer);
-        
-        this._seekHandler = this._seekMouseMove.bind(this);
-        
+    _createDOMControls() {
+        let barContainer = document.createElement('div');
+        let barParent = document.createElement('div');
+        let bar = document.createElement('div');
+        let barDrag = document.createElement('div');
+        let arrowLeft = document.createElement('div');
+        let arrowRight = document.createElement('div');
+
+        barContainer.classList.add('threeDView-seekBarContainer');
+        barParent.classList.add('threeDView-seekBarParent');
+        bar.classList.add('threeDView-seekBar');
+        barDrag.classList.add('threeDView-seekBar-drag');
+        arrowLeft.classList.add('threeDView-seekBar-arrowLeft');
+        arrowRight.classList.add('threeDView-seekBar-arrowRight');
+
+        barContainer.appendChild(barParent);
+        barParent.appendChild(arrowLeft);
+        barParent.appendChild(arrowRight);
+        barParent.appendChild(bar);
+        bar.appendChild(barDrag);
+        this.parentElement.appendChild(barContainer);
+
         localListen(bar, 'mousedown', (e) => {
             this._seekStart(e);
         });
@@ -595,21 +642,21 @@ class FlowController{
         localListen(arrowRight, 'mousedown', () => {
             this.moveLeft();
         });
-		
-		return {
-			barContainer: barContainer,
-			barParent: barParent,
-			bar: bar,
-			barDrag: barDrag,
-			arrowLeft: arrowLeft,
-			arrowRight: arrowRight,
+
+        return {
+            barContainer: barContainer,
+            barParent: barParent,
+            bar: bar,
+            barDrag: barDrag,
+            arrowLeft: arrowLeft,
+            arrowRight: arrowRight,
             DOMRect: bar.getBoundingClientRect(),
             barWidth: 40,
             barPadding: 2
-		}
-	}
+        }
+    }
     _createDOMText() {
-		let textContainer = document.createElement('div'),
+        let textContainer = document.createElement('div'),
             textHeader = document.createElement('div'),
             textSubheader = document.createElement('div'),
             textLine1 = document.createElement('div'),
@@ -617,14 +664,14 @@ class FlowController{
             br1 = document.createElement('br'),
             br2 = document.createElement('br'),
             br3 = document.createElement('br');
-        
-		textContainer.classList.add('threeDView-textContainer');
-		textContainer.classList.add('threeDView-textShadowEnabled');
-		textHeader.classList.add('threeDView-textHeader');
-		textSubheader.classList.add('threeDView-textSubheader');
-		textLine1.classList.add('threeDView-textLine1');
-		textLine2.classList.add('threeDView-textLine2');
-        
+
+        textContainer.classList.add('threeDView-textContainer');
+        textContainer.classList.add('threeDView-textShadowEnabled');
+        textHeader.classList.add('threeDView-textHeader');
+        textSubheader.classList.add('threeDView-textSubheader');
+        textLine1.classList.add('threeDView-textLine1');
+        textLine2.classList.add('threeDView-textLine2');
+
         textContainer.appendChild(textHeader);
         textContainer.appendChild(br1);
         textContainer.appendChild(textSubheader);
@@ -633,14 +680,14 @@ class FlowController{
         textContainer.appendChild(br3);
         textContainer.appendChild(textLine2);
         this.parentElement.appendChild(textContainer);
-        
+
         let _this = this;
-        
+
         return {
-            textContainer: textContainer, 
+            textContainer: textContainer,
             textHeader: textHeader,
             textSubheader: textSubheader,
-            textLine1: textLine1, 
+            textLine1: textLine1,
             textLine2: textLine2,
             currentAlbumIdx: -1,
             hotlinkActions: {
@@ -649,7 +696,7 @@ class FlowController{
                     execute: () => {
                         if (_this.dataSource) {
                             _this.dataSource.locked(() => {
-                                let album = this.dataSource.getValue(_this.DOMText.currentAlbumIdx);
+                                let album = this.dataSource!.getValue(_this.DOMText.currentAlbumIdx);
                                 if (album) navigationHandlers.album.navigate(album);
                             });
                         }
@@ -660,7 +707,7 @@ class FlowController{
                     execute: () => {
                         if (_this.dataSource) {
                             _this.dataSource.locked(() => {
-                                let album = this.dataSource.getValue(_this.DOMText.currentAlbumIdx);
+                                let album = this.dataSource!.getValue(_this.DOMText.currentAlbumIdx);
                                 if (album) navigationHandlers.year.navigate(album);
                             });
                         }
@@ -671,7 +718,7 @@ class FlowController{
                     execute: () => {
                         if (_this.dataSource) {
                             _this.dataSource.locked(() => {
-                                let album = this.dataSource.getValue(_this.DOMText.currentAlbumIdx);
+                                let album = this.dataSource!.getValue(_this.DOMText.currentAlbumIdx);
                                 if (album) navigationHandlers.albumartist.navigate(album.albumArtist);
                             });
                         }
@@ -688,50 +735,54 @@ class FlowController{
      */
     _updateCurrentAlbum(force) {
         const _this = this;
-        
+
         // Set DOM text of the current album if needed
-        let idx = parseInt(-1*this.target);
+        let idx = parseInt(-1 * this.target);
         if (this.dataSource) {
             if (idx != this.DOMText.currentAlbumIdx || force === true) {
                 let sett = this.control.settings;
                 let hotlinks = this.DOMText.hotlinkActions;
-                
+
                 // Get current album and set the text
                 this.dataSource.locked(async () => {
-                    let album = this.dataSource.getValue(idx);
-                    
+                    let album = this.dataSource!.getValue(idx);
+
                     if (!album) return;
                     // don't await tracklist unless we need to
                     var needToAwaitTracklist = false;
                     for (let prop in sett.textFields) if (sett.textFields[prop] === 'count' || sett.textFields[prop] === 'trackTitle') needToAwaitTracklist = true;
                     if (this.control.needsTracklist) needToAwaitTracklist = true;
-                    
+
                     let tracklist = album.getTracklist();
-                    
+
                     for (let prop in sett.textHotlinks)
                         if (sett.textHotlinks[prop] && !this.DOMText.hotlinkActions.hasOwnProperty(sett.textHotlinks[prop]))
                             throw new Error(`DOMText.hotlinkActions does not have property ${sett.textHotlinks[prop]} (settings.textHotlinks.${prop})`);
-                    
+
                     if (needToAwaitTracklist) {
                         await tracklist.whenLoaded(); // to get track count
                         var trackString = makeTrackString(tracklist.count);
                         var trackTitleString = makeTrackTitleString(tracklist);
-                    } 
-                    
+                    }
+
                     let header = makeString(sett.textFields.header);
                     let subheader = makeString(sett.textFields.subheader);
                     let line1 = makeString(sett.textFields.line1);
                     let line2 = makeString(sett.textFields.line2);
-                    let headerLink = hotlinks.hasOwnProperty(sett.textHotlinks.header) ? hotlinks[sett.textHotlinks.header] : null;
-                    let subheaderLink = hotlinks.hasOwnProperty(sett.textHotlinks.subheader) ? hotlinks[sett.textHotlinks.subheader] : null;
-                    let line1link = hotlinks.hasOwnProperty(sett.textHotlinks.line1) ? hotlinks[sett.textHotlinks.line1] : null;
-                    let line2link = hotlinks.hasOwnProperty(sett.textHotlinks.line2) ? hotlinks[sett.textHotlinks.line2] : null;
-                    
+                    let headerLink = sett.textHotlinks.header && hotlinks.hasOwnProperty(sett.textHotlinks.header) ?
+                        hotlinks[sett.textHotlinks.header] : null;
+                    let subheaderLink = sett.textHotlinks.subheader && hotlinks.hasOwnProperty(sett.textHotlinks.subheader) ?
+                        hotlinks[sett.textHotlinks.subheader] : null;
+                    let line1link = sett.textHotlinks.line1 && hotlinks.hasOwnProperty(sett.textHotlinks.line1) ?
+                        hotlinks[sett.textHotlinks.line1] : null;
+                    let line2link = sett.textHotlinks.line2 && hotlinks.hasOwnProperty(sett.textHotlinks.line2) ?
+                        hotlinks[sett.textHotlinks.line2] : null;
+
                     if (typeof header === 'number' && header === -1) header = '';
                     if (typeof subheader === 'number' && subheader === -1) subheader = '';
                     if (typeof line1 === 'number' && line1 === -1) line1 = '';
                     if (typeof line2 === 'number' && line2 === -1) line2 = '';
-                    
+
                     this.setDOMText({
                         header: header,
                         subheader: subheader,
@@ -743,31 +794,31 @@ class FlowController{
                         line1: line1link,
                         line2: line2link,
                     });
-                    
+
                     // now update the data source of the tracklist (needed for FlowAlbumView.getTracklist)
-					if (this.control.needsTracklist && this.control.parentView.viewNode.handlerID === 'playlist') {
-						// For playlists, we have to filter the tracklist
-						let filteredTracklist = await this.filterFromPlaylist(tracklist);
-						this.control.focusedTracklist = filteredTracklist;
-					}
-					else {
-						this.control.focusedTracklist = tracklist;
-					}
-                    
+                    if (this.control.needsTracklist && this.control.parentView.viewNode.handlerID === 'playlist') {
+                        // For playlists, we have to filter the tracklist
+                        let filteredTracklist = await this.filterFromPlaylist(tracklist);
+                        this.control.focusedTracklist = filteredTracklist;
+                    }
+                    else {
+                        this.control.focusedTracklist = tracklist;
+                    }
+
                     function makeString(textField) {
                         if (album[textField] === -1 || !textField) return '';
-                        
+
                         let str = '';
-                        if (_this.control.settings.showPrefix && uitools.tracklistFieldDefs[textField]) 
+                        if (_this.control.settings.showPrefix && uitools.tracklistFieldDefs[textField])
                             str = uitools.tracklistFieldDefs[textField].title + ': ';
-                        str +=  (textField === 'count') ? trackString :
-                                (textField === 'trackTitle') ? trackTitleString :
+                        str += (textField === 'count') ? trackString :
+                            (textField === 'trackTitle') ? trackTitleString :
                                 album[textField];
                         return str;
                     }
-                    
+
                     function makeTrackTitleString(tracklist) {
-                        let track = app.player.getCurrentTrack();                        
+                        let track = app.player.getCurrentTrack();
                         if (typeof tracklist.getAllValues !== 'function') return '[Not supported, please update to at least 5.0.2]';
                         let paths = tracklist.getAllValues('path');
                         // if the album includes the current track, then print its title
@@ -776,7 +827,7 @@ class FlowController{
                         }
                         else return '';
                     }
-                    
+
                     function makeTrackString(count) {
                         if (count == 1) return `${count} track`;
                         else return `${count} tracks`;
@@ -814,13 +865,18 @@ class FlowController{
      * @param {string} [contents.line2] Line 2
      * @param {Object} [hotlinkActions] Hotlink actions (use functions from this.DOMControls.hotlinkActions)
      */
-    setDOMText(contents, hotlinkActions) {
+    setDOMText(contents, hotlinkActions?: {
+        header?: ExecutableAction;
+        subheader?: ExecutableAction;
+        line1?: ExecutableAction;
+        line2?: ExecutableAction;
+    }) {
         // Set the text
         this.DOMText.textHeader.innerText = contents.header || '';
         this.DOMText.textSubheader.innerText = contents.subheader || '';
         this.DOMText.textLine1.innerText = contents.line1 || '';
         this.DOMText.textLine2.innerText = contents.line2 || '';
-        
+
         // Set the hotlink actions
         if (!hotlinkActions) hotlinkActions = {};
         // Header
@@ -863,29 +919,29 @@ class FlowController{
     setDataSource(newDataSource) {
         // newDataSource.whenLoaded()
         this.control.dataSourceReady // make sure to wait until sort is done
-        .then(() => {
-            this.dataSource = newDataSource;
-            this._dataSource = newDataSource; // _dataSource is the un-filtered data source
-            this.albumArts.setDataSource(newDataSource);
-            // update max position
-            if (newDataSource.count > 0)
-                this.maxPosition = newDataSource.count; 
-            // if there are no albums, keep a total of 1
-            else 
-                this.maxPosition = 1;
-            // Force DOM text to update
-            this.DOMText.currentAlbumIdx = -1;
-        })
+            .then(() => {
+                this.dataSource = newDataSource;
+                this._dataSource = newDataSource; // _dataSource is the un-filtered data source
+                this.albumArts.setDataSource(newDataSource);
+                // update max position
+                if (newDataSource.count > 0)
+                    this.maxPosition = newDataSource.count;
+                // if there are no albums, keep a total of 1
+                else
+                    this.maxPosition = 1;
+                // Force DOM text to update
+                this.DOMText.currentAlbumIdx = -1;
+            })
     }
     async scrollToLetter(letter) {
         if (this.dataSource) {
             let filteredDS = await this.dataSource.filterByPrefix(letter).whenLoaded();
             if (filteredDS.count > 0) {
                 filteredDS.locked(() => {
-                    this.dataSource.locked(() => {
+                    this.dataSource!.locked(() => {
                         let firstAlbum = filteredDS.getValue(0);
-                        let idx = this.dataSource.indexOf(firstAlbum);
-                        
+                        let idx = this.dataSource!.indexOf(firstAlbum);
+
                         this.target = -1 * idx;
                     });
                 });
@@ -894,18 +950,18 @@ class FlowController{
     }
     async filterAlbums(searchPhrase) {
         if (this.dataSource && this._dataSource) {
-            this.dataSource = await this._dataSource.filterBySearchPhrase(searchPhrase).whenLoaded();
-            
+            this.dataSource = await this._dataSource.filterBySearchPhrase(searchPhrase).whenLoaded() as AlbumList; // checked; filterBySearchPhrase() returns the same data type
+
             if (this.dataSource.count === 0) {
                 this.control.showToast(`"${searchPhrase}": ${_('phrase not found')}`);
                 this.resetFilter();
             };
-            
+
             // Update the arts data source, update max position, and update current album text
             this.albumArts.setDataSource(this.dataSource);
             this.maxPosition = this.dataSource.count;
             this._updateCurrentAlbum(true);
-            
+
             // For a short period (a few frames), enable a force refresh, to force the controller to render extra frames
             //  This is so that the album art does not take a half-second to appear while filtering
             this.control.triggerTemporaryForcedFrames();
@@ -919,7 +975,7 @@ class FlowController{
             this.albumArts.setDataSource(this.dataSource);
             this.maxPosition = this.dataSource.count;
             this._updateCurrentAlbum(true);
-            
+
             this.control.triggerTemporaryForcedFrames();
         }
     }
@@ -954,99 +1010,99 @@ class FlowController{
     }
     preloadThumbnails() {
         const _this = this;
-        _this.cancelThumbnailLoading = false;
-		
-		var taskProgress = app.backgroundTasks.createNew();
-		taskProgress.leadingText = ('Preloading thumbnails: ');
-		
-		var count = (_this.dataSource) ? _this.dataSource.count : 0;
-        
+        let cancelThumbnailLoading = false; // todo remove
+
+        var taskProgress = app.backgroundTasks.createNew();
+        taskProgress.leadingText = ('Preloading thumbnails: ');
+
+        var count = (_this.dataSource) ? _this.dataSource.count : 0;
+
         _this.albumArts.isPreloadingAA = true;
-        
+
         function _loadByIdx(idx) {
             if (window._cleanUpCalled || _this._cleanUpCalled) return taskProgress.terminate();
-            
-            if (_this.cancelThumbnailLoading || (idx > count) || taskProgress.terminated) {
+
+            if (cancelThumbnailLoading || (idx > count) || taskProgress.terminated) {
                 _this.albumArts.isPreloadingAA = false;
                 return taskProgress.terminate();
             }
-			
-			_this.albumArts.getArt(idx, false, true);
-			_this.albumArts.getArt(idx + 1, false, true);
+
+            _this.albumArts.getArt(idx, false, true);
+            _this.albumArts.getArt(idx + 1, false, true);
             _this.albumArts.getArt(idx + 2, false, true, (done) => {
-					
-				taskProgress.text = sprintf('%d of %d', idx + 2, count);
-				taskProgress.value = (idx + 2) / count;
-				
-				// Give the system some time to breathe
-				setTimeout(() => {
-					_loadByIdx(idx + 3);
-				}, 1);
+
+                taskProgress.text = sprintf('%d of %d', idx + 2, count);
+                taskProgress.value = (idx + 2) / count;
+
+                // Give the system some time to breathe
+                setTimeout(() => {
+                    _loadByIdx(idx + 3);
+                }, 1);
             })
         }
         _loadByIdx(0);
     }
-	moveLeft() {
-		
-		if (this.target > -1*this.maxPosition+1) {
-			this.target--;
-			
-			// if the key event is happening fast enough, give it a bigger kick (increment target 2x as much)
-			let now = Date.now();
-			if (now - this._lastLeftMove < FAST_MOVE_THRESHOLD && this.target > -1*this.maxPosition+2 && this.fastMoveEnabled) {
-				this.target--;
-			}
-			this._lastLeftMove = now;
-            
+    moveLeft() {
+
+        if (this.target > -1 * this.maxPosition + 1) {
+            this.target--;
+
+            // if the key event is happening fast enough, give it a bigger kick (increment target 2x as much)
+            let now = Date.now();
+            if (now - this._lastLeftMove < FAST_MOVE_THRESHOLD && this.target > -1 * this.maxPosition + 2 && this.fastMoveEnabled) {
+                this.target--;
+            }
+            this._lastLeftMove = now;
+
             this._updateBarPosition();
-		}
-	}
-	moveRight() {
-		
-		if (this.target < 0) {
-			this.target++;
-			
-			// if the key event is happening fast enough, give it a bigger kick (increment target 2x as much)
-			let now = Date.now();
-			if (now - this._lastRightMove < FAST_MOVE_THRESHOLD && this.target < 1 && this.fastMoveEnabled) {
-				this.target++;
-			}
-			this._lastRightMove = now;
-            
+        }
+    }
+    moveRight() {
+
+        if (this.target < 0) {
+            this.target++;
+
+            // if the key event is happening fast enough, give it a bigger kick (increment target 2x as much)
+            let now = Date.now();
+            if (now - this._lastRightMove < FAST_MOVE_THRESHOLD && this.target < 1 && this.fastMoveEnabled) {
+                this.target++;
+            }
+            this._lastRightMove = now;
+
             this._updateBarPosition();
-		}
-	}
-	/**
-	 * @param {MouseEvent} e 
-	 */
-	onMouseDown(e) {
-		this._updateRaycast();
-		//Set the target to the clicked object
-		if (this._mousedOverObject && this._mousedOverObject.mesh.visible) {
-			
-			this.target = Math.round(this.position - this._mousedOverObject.position);
-			this._updateBarPosition();
-			
-			let ds = this.dataSource;
-			let index = parseInt(-1*this.target);
-			if (ds && ds.count > 0) {
-				
-				ds.modifyAsync(function () {
-					ds.clearSelection();
-					ds.setSelected(index, true);
-					ds.focusedIndex = index;
-				});
-			}
-		}
-	}
+        }
+    }
+    /**
+     * @param {MouseEvent} e 
+     */
+    onMouseDown(e) {
+        this._updateRaycast();
+        //Set the target to the clicked object
+        if (this._mousedOverObject && this._mousedOverObject.mesh.visible) {
+
+            this.target = Math.round(this.position - this._mousedOverObject.position);
+            this._updateBarPosition();
+
+            let ds = this.dataSource;
+            let index = parseInt(-1 * this.target);
+            if (ds && ds.count > 0) {
+
+                ds.modifyAsync(function () {
+                    ds.clearSelection();
+                    ds.setSelected(index, true);
+                    ds.focusedIndex = index;
+                });
+            }
+        }
+    }
     onMouseWheel(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Default to deltaY, but if it's a horizontal scroll i.e. deltaY is 0, then use deltaX
         let origDelta = e.deltaY;
         if (e.deltaY === 0) origDelta = e.deltaX;
-        
+
         let sett = this.control.settings;
         let delta;
         // For user-set scroll # to override the Windows setting
@@ -1057,95 +1113,73 @@ class FlowController{
         else {
             delta = -1 * origDelta * 0.024;
         }
-        
+
         delta = (delta > 0) ? Math.ceil(delta) : Math.floor(delta);
-        
+
         this.target += delta;
         this._updateBarPosition();
     }
-	cleanUp() {
+    cleanUp() {
         this._cleanUpCalled = true;
-		
+
         for (let i = 0; i < this.objects.length; i++) {
             let object = this.objects[i];
-			this.scene.remove(object.gradientMesh);
-			this.scene.remove(object.mesh);
-			this.scene.remove(object.reflectionMesh);
-			disposeNode(object.gradientMesh);
-			disposeNode(object.mesh);
-			disposeNode(object.reflectionMesh);
-		}
-		
-		this.albumArts.cleanUp();
-		        
+            this.scene.remove(object.gradientMesh);
+            this.scene.remove(object.mesh);
+            this.scene.remove(object.reflectionMesh);
+            disposeNode(object.gradientMesh);
+            disposeNode(object.mesh);
+            disposeNode(object.reflectionMesh);
+        }
+
+        this.albumArts.cleanUp();
+
         // for any remaining children like lights
         for (let child of this.scene.children) {
             this.scene.remove(child);
-            if (typeof child.dispose === 'function')
+            if ('dispose' in child && typeof child.dispose === 'function') {
                 child.dispose();
+            }
         }
-        
-		this.enabled = false;
-		
-		this.scene = null;
-		this.camera = null;
-		this.albumArts = null;
-	}
+
+        this.enabled = false;
+
+        // @ts-ignore
+        this.scene = null;
+        // @ts-ignore
+        this.camera = null;
+        // @ts-ignore
+        this.albumArts = null;
+    }
 }
 
-function disposeNode (node)
-{
-    if (node instanceof THREE.Mesh)
-    {
-        if (node.geometry)
-        {
-            node.geometry.dispose ();
+function disposeNode(node) {
+    if (node instanceof THREE.Mesh) {
+        if (node.geometry) {
+            node.geometry.dispose();
         }
 
-        if (node.material)
-        {
-            if (node.material instanceof THREE.MeshFaceMaterial)
-            {
-                $.each (node.material.materials, function (idx, mtrl)
-                {
-                    if (mtrl.map)               mtrl.map.dispose ();
-                    if (mtrl.lightMap)          mtrl.lightMap.dispose ();
-                    if (mtrl.bumpMap)           mtrl.bumpMap.dispose ();
-                    if (mtrl.normalMap)         mtrl.normalMap.dispose ();
-                    if (mtrl.specularMap)       mtrl.specularMap.dispose ();
-                    if (mtrl.envMap)            mtrl.envMap.dispose ();
-                    if (mtrl.alphaMap)          mtrl.alphaMap.dispose();
-                    if (mtrl.aoMap)             mtrl.aoMap.dispose();
-                    if (mtrl.displacementMap)   mtrl.displacementMap.dispose();
-                    if (mtrl.emissiveMap)       mtrl.emissiveMap.dispose();
-                    if (mtrl.gradientMap)       mtrl.gradientMap.dispose();
-                    if (mtrl.metalnessMap)      mtrl.metalnessMap.dispose();
-                    if (mtrl.roughnessMap)      mtrl.roughnessMap.dispose();
+        if (node.material) {
 
-                    mtrl.dispose ();    // disposes any programs associated with the material
-                });
-            }
-            else
-            {
-                if (node.material.map)              node.material.map.dispose ();
-                if (node.material.lightMap)         node.material.lightMap.dispose ();
-                if (node.material.bumpMap)          node.material.bumpMap.dispose ();
-                if (node.material.normalMap)        node.material.normalMap.dispose ();
-                if (node.material.specularMap)      node.material.specularMap.dispose ();
-                if (node.material.envMap)           node.material.envMap.dispose ();
-                if (node.material.alphaMap)         node.material.alphaMap.dispose();
-                if (node.material.aoMap)            node.material.aoMap.dispose();
-                if (node.material.displacementMap)  node.material.displacementMap.dispose();
-                if (node.material.emissiveMap)      node.material.emissiveMap.dispose();
-                if (node.material.gradientMap)      node.material.gradientMap.dispose();
-                if (node.material.metalnessMap)     node.material.metalnessMap.dispose();
-                if (node.material.roughnessMap)     node.material.roughnessMap.dispose();
+            if (node.material.map) node.material.map.dispose();
+            if (node.material.lightMap) node.material.lightMap.dispose();
+            if (node.material.bumpMap) node.material.bumpMap.dispose();
+            if (node.material.normalMap) node.material.normalMap.dispose();
+            if (node.material.specularMap) node.material.specularMap.dispose();
+            if (node.material.envMap) node.material.envMap.dispose();
+            if (node.material.alphaMap) node.material.alphaMap.dispose();
+            if (node.material.aoMap) node.material.aoMap.dispose();
+            if (node.material.displacementMap) node.material.displacementMap.dispose();
+            if (node.material.emissiveMap) node.material.emissiveMap.dispose();
+            if (node.material.gradientMap) node.material.gradientMap.dispose();
+            if (node.material.metalnessMap) node.material.metalnessMap.dispose();
+            if (node.material.roughnessMap) node.material.roughnessMap.dispose();
 
-                node.material.dispose ();   // disposes any programs associated with the material
-            }
+            node.material.dispose();   // disposes any programs associated with the material
+
         }
     }
 }
 
-window.FlowController = FlowController;
-window.AlbumArtController = AlbumArtController;
+registerClass(FlowController);
+registerClass(AlbumArtController);

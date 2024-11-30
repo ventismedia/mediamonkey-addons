@@ -1,4 +1,4 @@
-/// <reference path="E:/Delphi/HTML5Monkey/bin/typescript/src/viewHandlers.ts"/>
+import './controls/FlowAlbumView';
 
 viewHandlers.FlowAlbumView = inheritHandler('FlowAlbumView', 'BaseList', {
     controlClass: 'FlowAlbumView',
