@@ -35,7 +35,7 @@ lyrics-font-size:
 	pack-mmip $@ "Lyrics Font Size" $(PACKER-ARGS)
 
 output-now-playing-to-file:
-	pack-mmip $@/addon "Output Currently Playing Track To File" $(PACKER-ARGS)
+	pack-mmip $@ "Output Currently Playing Track To File" $(PACKER-ARGS)
 
 restore-beta-icons:
 	pack-mmip $@ "Restore Beta Icons" $(PACKER-ARGS)
