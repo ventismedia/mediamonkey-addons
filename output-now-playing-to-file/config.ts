@@ -1,4 +1,4 @@
-import type { Button, Edit } from 'declarations/types/Controls';
+import type { Button, Edit } from 'mediamonkey-types/types/Controls';
 
 type UIConfigItems = {
     editOutputFile: ElementWith<Edit>,
