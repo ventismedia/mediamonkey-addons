@@ -1,3 +1,4 @@
+import PlaylistHeader from "mediamonkey-types/controls/playlistHeader"
 PlaylistHeader.prototype.override({
     _initButtons: function($super) {
         $super();

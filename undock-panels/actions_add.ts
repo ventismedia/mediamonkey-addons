@@ -1,3 +1,16 @@
+import { ExecutableAction } from "mediamonkey-types/actions";
+import { openDialog } from "mediamonkey-types/uitools";
+
+declare module 'mediamonkey-types/actions' {
+    interface Actions {
+        undockLyrics: ExecutableAction;
+        undockPlaying: ExecutableAction;
+        _undockPlaying: ExecutableAction;
+        closeUndockedWindow: ExecutableAction;
+        undockPlaylist: ExecutableAction;
+    }
+}
+
 (() => {
     
     var isLyricsUndocked = false, 
@@ -25,6 +38,7 @@
                     uitools.openDialog('dlgUndockedControl', {
                         modal: false,
                         control: 'LyricsWindow',
+                        // notShared: true, // required at the moment to use a module script
                     });
                     isLyricsUndocked = true;
                 }
@@ -90,11 +104,12 @@
             var viewData = currentTabControl.createViewData({node: node});
             var pl = node.dataSource;
             
-            uitools.openDialog('dlgUndockedControl', {
+            openDialog('dlgUndockedControl', {
                 modal: false,
                 control: 'Multiview',
                 playlist: pl,
                 viewData: viewData,
+                // notShared: true,
             });
         }
     };
