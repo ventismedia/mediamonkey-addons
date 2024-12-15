@@ -1,3 +1,7 @@
 {
-    "name": "mediamonkey-addons"
+    "name": "mediamonkey-addons",
+    "devDependencies": {
+        "mediamonkey": "^2024.0.1-beta1",
+        "@types/three": "~0.129.0"
+    }
 }
