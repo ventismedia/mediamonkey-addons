@@ -5,12 +5,15 @@
 		"module": "es2022" /* Specify what module code is generated. */,
 		"rootDir": "." /* Specify the root folder within your source files. */,
 		"moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
-		"types": [ "mediamonkey-types" ] /* Specify type package names to be included without being referenced in a source file. */,
+		"types": [ "mediamonkey" ] /* Specify type package names to be included without being referenced in a source file. */,
 		"isolatedModules": false /* Ensure that each file can be safely transpiled without relying on other imports. */,
 		"esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
 		"forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 		"strict": true /* Enable all strict type-checking options. */,
 		"noImplicitAny": false /* Enable error reporting for expressions and declarations with an implied 'any' type. */,
-		"skipLibCheck": true /* Skip type checking all .d.ts files. */
+		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
+        "strictPropertyInitialization": false  /* Classes that extend Control use "initialize" as a pseudo-constructor */,
+        "outDir": ".output" /* *You are not expected to run `tsc` on your own, so this output folder is not used. This setting is enabled so that the allowJs flag can be set to true. */,
+        "allowJs": true /* Enables type hinting in JS files */,
 	}
 }
