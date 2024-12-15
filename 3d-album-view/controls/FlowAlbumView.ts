@@ -1,13 +1,13 @@
 "use strict";
 
-import Control from "mediamonkey-types/controls/control";
-import TrackListView from "mediamonkey-types/controls/trackListView";
-import AlbumListView from "mediamonkey-types/controls/albumlistView";
+import Control from "mediamonkey/controls/control";
+import TrackListView from "mediamonkey/controls/trackListView";
+import AlbumListView from "mediamonkey/controls/albumlistView";
 import FlowController from "../3DController";
-import '../three.min.js';
+import '../three.js';
 
 import type * as ThreeJS from 'three';
-import ToolButton from "mediamonkey-types/controls/toolbutton";
+import ToolButton from "mediamonkey/controls/toolbutton";
 
 // requirejs('controls/control');
 // requirejs('controls/trackListView');

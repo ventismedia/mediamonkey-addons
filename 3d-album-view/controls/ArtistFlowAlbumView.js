@@ -2,6 +2,7 @@
 
 localRequirejs('controls/FlowAlbumView');
 
+
 inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
     initialize: function (elem, params) {
         // Title (before the album view)

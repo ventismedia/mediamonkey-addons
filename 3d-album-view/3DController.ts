@@ -22,8 +22,8 @@ function displayToast(message) {
 }
 
 import type * as ThreeJS from 'three';
-import Control from 'mediamonkey-types/controls/control';
-import { ExecutableAction } from 'mediamonkey-types/actions';
+import Control from 'mediamonkey/controls/control';
+import { ExecutableAction } from 'mediamonkey/actions';
 import type FlowAlbumView from './controls/FlowAlbumView';
 
 declare global {

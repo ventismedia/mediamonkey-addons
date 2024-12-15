@@ -3,10 +3,10 @@
     "id": "3D Album View",
     "description": "3D album view for MediaMonkey 5, inspired by MonkeyFlow. Requires WebGL.",
     "type": "views",
-    "version": "1.1.8",
+    "version": "1.2.0-unreleased",
     "author": "Ventis Media, Inc.",
     "config": "config.js",
     "installScript": "checkWebGL.js",
     "icon": "thumb.png",
-    "minAppVersion": "5.0.3"
+    "minAppVersion": "2024.0.0"
 }
