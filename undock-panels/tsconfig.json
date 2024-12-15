@@ -5,7 +5,7 @@
 		"module": "es2022" /* Specify what module code is generated. */,
 		"rootDir": "." /* Specify the root folder within your source files. */,
 		"moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
-		"types": [ "mediamonkey-types" ] /* Specify type package names to be included without being referenced in a source file. */,
+		"types": [ "mediamonkey" ] /* Specify type package names to be included without being referenced in a source file. */,
 		"isolatedModules": false /* Ensure that each file can be safely transpiled without relying on other imports. */,
 		"esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
 		"forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,

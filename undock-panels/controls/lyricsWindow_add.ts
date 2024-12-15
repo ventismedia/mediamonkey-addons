@@ -1,4 +1,4 @@
-import LyricsWindow from "mediamonkey-types/controls/lyricsWindow";
+import LyricsWindow from "mediamonkey/controls/lyricsWindow";
 LyricsWindow.prototype.override({
 	initialize: function($super, parentEl, params) {
 		$super(parentEl, params);

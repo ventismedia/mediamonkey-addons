@@ -1,12 +1,12 @@
-import 'mediamonkey-types/controls/menuButton';
-import 'mediamonkey-types/controls/columnTracklist';
-import 'mediamonkey-types/controls/nowplayingList';
-import 'mediamonkey-types/controls/nowPlaying/tracklist';
-import 'mediamonkey-types/controls/PlaylistHeader';
-import 'mediamonkey-types/viewHandlers';
-import 'mediamonkey-types/controls/playingListContainer';
-import Multiview from 'mediamonkey-types/controls/multiview';
-import type { Control, LyricsWindow } from 'mediamonkey-types/types/Controls';
+import 'mediamonkey/controls/menuButton';
+import 'mediamonkey/controls/columntracklist';
+import 'mediamonkey/controls/nowplayingList';
+import 'mediamonkey/controls/nowPlaying/tracklist';
+import 'mediamonkey/controls/playlistHeader';
+import 'mediamonkey/viewHandlers';
+import 'mediamonkey/controls/playingListContainer';
+import Multiview from 'mediamonkey/controls/multiview';
+import type { Control, LyricsWindow } from 'mediamonkey/types/Controls';
 
 declare global {
     var undocked_control: any; // todo correct type

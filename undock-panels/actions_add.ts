@@ -1,7 +1,7 @@
-import { ExecutableAction } from "mediamonkey-types/actions";
-import { openDialog } from "mediamonkey-types/uitools";
+import { ExecutableAction } from "mediamonkey/actions";
+import { openDialog } from "mediamonkey/uitools";
 
-declare module 'mediamonkey-types/actions' {
+declare module 'mediamonkey/actions' {
     interface Actions {
         undockLyrics: ExecutableAction;
         undockPlaying: ExecutableAction;

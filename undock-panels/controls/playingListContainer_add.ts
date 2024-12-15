@@ -1,4 +1,4 @@
-import PlayingListContainer from "mediamonkey-types/controls/playingListContainer";
+import PlayingListContainer from "mediamonkey/controls/playingListContainer";
 // Keep track of the state that's restored to the control on the main window, so we don't have to go through recursive state-restoring on the sub dialog
 var stateRestore;
 PlayingListContainer.prototype.override({
