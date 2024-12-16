@@ -3,7 +3,7 @@
     "id": "undockControls",
     "description": "Provides the ability to un-dock certain panels into a separate window. Currently supported: Playing panel, Lyrics, Playlists",
     "type": "views",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "author": "Ventis Media, Inc.",
     "minAppVersion": "2024.0.0",
     "icon": "undock-icon.svg"
