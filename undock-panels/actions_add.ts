@@ -8,6 +8,7 @@ declare module 'mediamonkey/actions' {
         _undockPlaying: ExecutableAction;
         closeUndockedWindow: ExecutableAction;
         undockPlaylist: ExecutableAction;
+        undockPlayingNode: ExecutableAction;
     }
 }
 
@@ -87,6 +88,24 @@ declare module 'mediamonkey/actions' {
             }, undefined);
         }
     }
+
+    actions.undockPlayingNode = {
+        title: function () {
+            return _('Undock');
+        },
+        icon: 'mode_windowed',
+        hotkeyAble: false,
+        execute: function () {
+            var node = app.createTree().createNode();
+            node.handlerID = 'npview';
+            var viewData = currentTabControl.createViewData({node: node});
+            uitools.openDialog('dlgUndockedControl', {
+                modal: false,
+                control: 'Multiview',                
+                viewData: viewData,
+            });
+        }
+    };
 
     actions.undockPlaylist = {
         title: function () {
