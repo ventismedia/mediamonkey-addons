@@ -4,7 +4,7 @@ import Control from "mediamonkey/controls/control";
 import TrackListView from "mediamonkey/controls/trackListView";
 import AlbumListView from "mediamonkey/controls/albumlistView";
 import FlowController from "../3DController";
-import '../three.js';
+import '../three.min.js';
 
 import type * as ThreeJS from 'three';
 import ToolButton from "mediamonkey/controls/toolbutton";
@@ -23,7 +23,7 @@ export interface FlowAlbumViewSettings {
     capFramerate: boolean,
     textBoxVisible: boolean,
     highResThumbnails: boolean,
-    backgroundColor?: string, // todo
+    backgroundColor?: number[],
     useHotlinks: boolean,
     throttleCarouselSpeed: boolean,
     mouseWheelScrollNumber?: number,

@@ -64,7 +64,7 @@ export class AlbumArtController {
     PICTURE_QUALITY?: number;
     dataSource?: DataSource<Album>;
     refreshFrameRequested = false;
-    constructor(gradColor) {
+    constructor(gradColor: string[]|number[]) {
         this.gradientCanvas.width = 256;
         this.gradientCanvas.height = 256;
         let ctx = this.gradientCanvas.getContext('2d');
@@ -150,7 +150,7 @@ export class AlbumArtController {
     changeGradient(gradColor) {
         this.gradient = this.loader.load(this.getGradientURI(gradColor[0], gradColor[1], gradColor[2]));
     }
-    getGradientURI(r, g, b) {
+    getGradientURI(r: string|number, g: string|number, b: string|number) {
         let ctx = this.gradientCtx;
         let canv = this.gradientCanvas;
         const WIDTH = 256;
@@ -268,10 +268,12 @@ export default class FlowController {
             // split rgb(#,#,#) into [#,#,#]
             this.defaultBackgroundColor = control.defaultStyles.backgroundColor.split('(')[1].split(')')[0].split(',');
             // for custom-set background color
-            let rgbArr;
+            let rgbArr: string[]|number[];
             if (control.settings && control.settings.backgroundColor) rgbArr = control.settings.backgroundColor;
             else rgbArr = this.defaultBackgroundColor;
 
+            if (rgbArr && rgbArr.length === 4) rgbArr.pop(); // If defaultStyles included rgba, pop the alpha to make it rgb
+            
             if (rgbArr && rgbArr.length === 3) {
                 this.albumArts = new AlbumArtController(rgbArr);
                 // Set picture quality
@@ -422,9 +424,7 @@ export default class FlowController {
             if (idx - roundedIdx < 0.2) {
                 let newArt = this.albumArts.getArt(roundedIdx, isMovingFast);
                 // assert(!Array.isArray(object.mesh.material))
-                // @ts-ignore TODO LOOK AT THIS
-                if (object.mesh.material.map?.uuid !== newArt) {
-                    console.log('setting newart');
+                if (object.mesh.material.map?.uuid !== newArt.uuid) {
                     object.mesh.material.map = newArt;
                 }
                 // If the art provided is the noImage art, then set it to transparent; otherwise make sure it's opaque

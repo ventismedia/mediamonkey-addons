@@ -181,7 +181,7 @@
     color: white;
 }
 
-.threeDView-defaultstyles{
+.threeDView-defaultStyles{
     width: 0;
     height: 0;
 }
@@ -190,14 +190,15 @@
     Change this attribute, in your skin's skin_base_add.less, to change the color of the 3D background.
     PLEASE USE THE !important KEYWORD. EXAMPLE:
     
-    .threeDView-defaultstyles{
+    .threeDView-defaultStyles{
         background-color: red!important;
     }
     
     Otherwise, it will prioritize the setting from this very file, meaning your skin can't override the color.
 */
-.threeDView-defaultstyles{
+.threeDView-defaultStyles{
     background-color: @baseColor;
+    // background-color: rgba(255, 190, 190, 0.5)
 }
 
 .threeDView-tracklist{
