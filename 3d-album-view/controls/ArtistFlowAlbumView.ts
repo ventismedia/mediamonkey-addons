@@ -1,10 +1,10 @@
 "use strict";
+import FlowAlbumView from "./FlowAlbumView";
 
-localRequirejs('controls/FlowAlbumView');
-
-
-inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
-    initialize: function (elem, params) {
+// inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
+export default class ArtistFlowAlbumView extends FlowAlbumView {
+    albumsTitle: HTMLDivElement;
+    initialize (elem, params) {
         // Title (before the album view)
         var albumsTitleParent = document.createElement('div');
         albumsTitleParent.innerHTML = '<h3 data-id="albumsTitle" class="inline blockTitleMarginFirst">Albums</h3>';
@@ -13,7 +13,7 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
         
         this.isArtistView = true;
         
-        ArtistFlowAlbumView.$super.initialize.apply(this, arguments);
+        super.initialize(elem, params);
         
         elem.classList.remove('fill');
         elem.classList.add('threeDView-artistViewParent');
@@ -27,11 +27,8 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
                 this.autoSortString = albumSortByControl.controlClass.sortString;
             })
         }
-    },
-    cleanUp() {
-        ArtistFlowAlbumView.$super.cleanUp.call(this);
-    },
-    setAlbumsTitle: function (cnt) {
+    }
+    setAlbumsTitle  (cnt) {
         if (this.albumsTitle) {
             var t = _('Albums');
             if ((cnt !== undefined) && (cnt >= 5)) {
@@ -39,7 +36,7 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
             }
             this.albumsTitle.textContent = t;
         }
-    },
+    }
     async filterSource(searchPhrase) {
         // If the search phrase is empty, un-filter the albums
         if (!searchPhrase || searchPhrase == '' || searchPhrase == ' ') {
@@ -49,7 +46,7 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
         this.controller.filterAlbums(searchPhrase).then(() => {
             this.setAlbumsTitle(this.dataSource.count);
         });
-    },
+    }
     _setCameraPosition() {
         var ratio = this.camera.aspect;
         
@@ -74,19 +71,18 @@ inheritClass('ArtistFlowAlbumView', FlowAlbumView, {
             this.camera.fov = 50;
             this.camera.lookAt(0, -0.5, 0);
         }
-    },
-}, {
-    
-    dataSource: {
-        get: function () {
-            return FlowAlbumView.prototype.__lookupGetter__('dataSource').apply(this, arguments);
-        },
-        set: function (ds) {
-            FlowAlbumView.prototype.__lookupSetter__('dataSource').apply(this, arguments);
-            ds.whenLoaded()
-                .then(() => {
-                    this.setAlbumsTitle(ds.count);
-                })
-        }
     }
-})
+    get dataSource() {
+        return super.dataSource;
+    }
+    set dataSource(ds) {
+        super.dataSource = ds;
+        ds.whenLoaded()
+            .then(() => {
+                this.setAlbumsTitle(ds.count);
+            })
+    }
+}
+
+registerClass(ArtistFlowAlbumView);
+registerFileImport('controls/ArtistFlowAlbumView');

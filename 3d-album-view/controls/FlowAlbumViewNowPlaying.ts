@@ -1,17 +1,17 @@
 "use strict";
+import FlowAlbumView from "./FlowAlbumView";
 
-localRequirejs('controls/FlowAlbumView');
-
-inheritClass('FlowAlbumViewNowPlaying', FlowAlbumView, {
-    initialize: function (elem, params) {
-        FlowAlbumViewNowPlaying.$super.initialize.apply(this, arguments);
+export default class FlowAlbumViewNowPlaying extends FlowAlbumView {
+    handlePlaybackStateChange: (this: FlowAlbumViewNowPlaying, e: string) => void;
+    initialize (elem, params) {
+        super.initialize(elem, params);
 		
 		this.doubleClickDisabled = true; // disable double click
 		this.contextMenu = () => {};
         
         var currentTrack;
         var lastPSCTime;
-        this.handlePlaybackStateChange = (function(e) {
+        this.handlePlaybackStateChange = (function(this: FlowAlbumViewNowPlaying, e: string) {
             if (e === 'trackChanged' || e === 'play' || e === 'unpause') {
                 // Don't allow multiple event handlers in the same few frames
                 var now = Date.now();
@@ -43,10 +43,13 @@ inheritClass('FlowAlbumViewNowPlaying', FlowAlbumView, {
         if (this.controller) {
             this.controller.disableDOMControls();
         }
-    },
+    }
     cleanUp() {
-        FlowAlbumViewNowPlaying.$super.cleanUp.call(this);
+        super.cleanUp();
         
         app.unlisten(app.player, 'playbackState', this.handlePlaybackStateChange);
-    },
-})
+    }
+}
+
+registerClass(FlowAlbumViewNowPlaying);
+registerFileImport('controls/flowAlbumView');
