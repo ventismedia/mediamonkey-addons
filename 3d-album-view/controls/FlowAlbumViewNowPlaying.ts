@@ -26,7 +26,7 @@ export default class FlowAlbumViewNowPlaying extends FlowAlbumView {
                         var currentAlbum = await currentTrack.getAlbumAsync();
                         if (!currentAlbum) return;
                         
-                        var idx = this.dataSource.indexOf(currentAlbum);
+                        var idx = await this.dataSource.indexOfPersistentIDAsync(currentAlbum.persistentID);
                         if (idx < 0) return console.error('Current album not found in album list!'); // to remove later
                         
                         this.controller.target = -1 * idx;
